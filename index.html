@@ -2186,7 +2186,7 @@ html,body{padding-bottom:130px!important;}
 <meta name="albaz-build" content="V2.2-GITHUB-3D-HARDFIX-2026-09-08">
 
 
-<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V6-BOTTOM-NAV-FIX">
+<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V10-RESOLUTION-NAV-CLEAN">
 
 
 
@@ -2342,7 +2342,7 @@ body:not(.albaz-drawer-open) .albazMobileBackdrop{display:none!important}
 
 /* Technical splash refined */
 #albazTechSplash{
-  position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+  position:fixed;inset:0;z-index:99999;display:none!important;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
   background:radial-gradient(circle at 50% 42%,rgba(39,116,171,.24),transparent 30%),linear-gradient(180deg,#020710,#04101d 64%,#02070e);
   color:#eef7ff;font-family:"Janna LT Bold","Janna LT","Tahoma","Arial",sans-serif;transition:opacity .65s ease,visibility .65s ease
 }
@@ -4667,7 +4667,7 @@ function exportPNG(){
     const canvas = getVisibleExportCanvas();
     const iso = formatCaseDateISO();
     const suffix = CURRENT_VIEW_MODE === '3d' ? '3d_globe' : '2d_map';
-    const fileName = `sao_south_africa_${suffix}_v9_6_3_${iso}.png`;
+    const fileName = `ALBAZ_NE_V2_2_${suffix}_${iso}.png`;
     const dataUrl = canvas.toDataURL('image/png');
     if(window.AndroidSave && typeof AndroidSave.saveDataUrl === 'function'){
       AndroidSave.saveDataUrl(dataUrl, fileName, 'image/png');
@@ -5022,13 +5022,13 @@ function exportCaseHTML(){
   <div class="map">
     <img src="${img}" alt="خريطة رؤية الهلال">
   </div>
-  <footer>v2.7 Final Android Build — HTML Export — الخريطة ملتقطة من الشاشة الحالية بعد حساب الألوان.</footer>
+  <footer>ALBAZ-NE V2.2 — HTML Export — الخريطة ملتقطة من الشاشة الحالية بعد حساب الألوان.</footer>
 </div>
 <!-- ALBAZ_NE_V2_2_WEB_PATCH -->
 </body>
 </html>`;
 
-    const fileName = `sao_south_africa_map_report_${iso}.html`;
+    const fileName = `ALBAZ_NE_V2_2_map_report_${iso}.html`;
     if(window.AndroidSave && typeof AndroidSave.saveDataUrl === 'function'){
       const dataUrl = 'data:text/html;charset=utf-8;base64,' + btoa(unescape(encodeURIComponent(report)));
       AndroidSave.saveDataUrl(dataUrl, fileName, 'text/html');
