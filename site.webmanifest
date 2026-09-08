@@ -1,18 +1,26 @@
 {
   "id": "./",
-  "name": "ALBAZ Smart Atlas — معيار الباز الرسمي لرؤية الهلال",
-  "short_name": "ALBAZ Atlas",
-  "description": "التطبيق الرسمي لمعيار ALBAZ-NE V2.2 لرؤية الهلال: خرائط 2D و3D، تحليل المواقع، التقارير العلمية، والتدرج العالمي للرؤية.",
+  "name": "أطلس الباز الذكي لرؤية الهلال — ALBAZ Smart Crescent Visibility Atlas",
+  "short_name": "ALBAZ Crescent Atlas",
+  "description": "أطلس الباز الذكي لرؤية الهلال: ALBAZ Smart Crescent Visibility Atlas. مدعوم بمعيار ALBAZ-NE V2.2. خرائط 2D و3D، تحليل المواقع والتقارير الفلكية.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./?view=home",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait-primary",
   "background_color": "#06111f",
   "theme_color": "#081a2e",
-  "categories": ["education", "science", "utilities"],
+  "categories": [
+    "education",
+    "science",
+    "utilities"
+  ],
   "shortcuts": [
     {
       "name": "الخريطة الذكية 2D",
