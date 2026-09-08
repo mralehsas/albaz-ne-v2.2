@@ -16,7 +16,7 @@ if errorlevel 1 (
   exit /b 1
 )
 if not exist Dist mkdir Dist
-copy /Y "app\build\outputs\apk\release\app-release-unsigned.apk" "Dist\ALBAZ_Smart_Crescent_Atlas_v2.2.1_RELEASE_UNSIGNED.apk" >nul
+copy /Y "app\build\outputs\apk\release\app-release-unsigned.apk" "Dist\ALBAZ_Smart_Crescent_Atlas_v2.2.2_RELEASE_UNSIGNED.apk" >nul
 echo.
 echo [OK] تم إنشاء Release غير موقع داخل Dist.
 echo للتوزيع العام يجب توقيعه بمفتاحك الرسمي.
