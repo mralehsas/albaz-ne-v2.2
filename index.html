@@ -2186,7 +2186,7 @@ html,body{padding-bottom:130px!important;}
 <meta name="albaz-build" content="V2.2-GITHUB-3D-HARDFIX-2026-09-08">
 
 
-<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V10-RESOLUTION-NAV-CLEAN">
+<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V12-VISIBLE-LEGEND">
 
 
 
@@ -2799,16 +2799,16 @@ body.albaz-menu-open #albazOfficialMenuBackdrop{display:block}
         </div>
       </div>
 
-      <div class="odehColorPanel" aria-label="تدرج ألوان معيار الباز ALBAZ-NE V2.2">
-        <div class="odehColorTitle">تدرج ألوان ALBAZ-NE V2.2 — القرار الرسمي عند V_Albaz = 0</div>
+      <div class="odehColorPanel" aria-label="مفتاح ألوان أطلس الباز">
+        <div class="odehColorTitle">مفتاح ألوان الرؤية — ALBAZ-NE V2.2</div>
         <div class="odehColorStrip">
-          <span class="odehColorChip"><span class="sw" style="background:#108a00"></span>A: P ≥ 85% — مرئي باحتمال مرتفع</span>
-          <span class="odehColorChip"><span class="sw" style="background:#63ff32"></span>B: P ≥ 37.674% — مرئي وفق الحد المجمد</span>
-          <span class="odehColorChip"><span class="sw" style="background:#fff8b8;border:1px solid #b9ab48"></span>C: 25–37.674% — دون الحد بقليل</span>
-          <span class="odehColorChip"><span class="sw" style="background:#ffff00;border:1px solid #b9ab48"></span>D: 10–25% — غير مرئي</span>
-          <span class="odehColorChip"><span class="sw" style="background:#ff9900"></span>E: 2–10% — احتمال ضعيف جداً</span>
-          <span class="odehColorChip"><span class="sw" style="background:#ffffff;border:1px solid #789"></span>F: P &lt; 2% — غير مرئي</span>
-          <span class="odehColorChip"><span class="sw" style="background:#ff0000"></span>أحمر: استحالة هندسية قبل الحكم</span>
+          <span class="odehColorChip"><span class="sw" style="background:#108a00"></span><b>A</b> مرئي بسهولة</span>
+          <span class="odehColorChip"><span class="sw" style="background:#63ff32"></span><b>B</b> مرئي في ظروف جيدة</span>
+          <span class="odehColorChip"><span class="sw" style="background:#fff8b8;border:1px solid #b9ab48"></span><b>C</b> رؤية حدية</span>
+          <span class="odehColorChip"><span class="sw" style="background:#ffff00;border:1px solid #b9ab48"></span><b>D</b> يحتاج مساعدة بصرية</span>
+          <span class="odehColorChip"><span class="sw" style="background:#ff9900"></span><b>E</b> احتمال ضعيف جداً</span>
+          <span class="odehColorChip"><span class="sw" style="background:#ffffff;border:1px solid #789"></span><b>F</b> غير مرئي</span>
+          <span class="odehColorChip"><span class="sw" style="background:#ff0000"></span><b>IMP</b> استحالة هندسية</span>
         </div>
       </div>
 
@@ -6714,5 +6714,93 @@ function openProfessionalReportNativeSafe(){
   .albazHomeDesc{font-size:12px!important}
 }
 </style>
+
+<style id="albaz-visible-legend-dock-v1-style">
+/* Visible color legend dock — UI only */
+.albazLegendDock{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:104px;
+  z-index:940;
+  width:min(980px,calc(100% - 30px));
+  min-height:58px;
+  padding:8px 10px;
+  border-radius:22px;
+  border:1px solid rgba(232,189,89,.38);
+  background:rgba(5,17,31,.975);
+  box-shadow:0 14px 40px rgba(0,0,0,.42);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  overflow-x:auto;
+  scrollbar-width:thin;
+}
+body.albaz-home-mode .albazLegendDock{display:none!important}
+.albazLegendDock .legendDockTitle{
+  flex:0 0 auto;
+  color:#ffe09a;
+  font-size:12px;
+  font-weight:900;
+  padding:0 8px;
+  white-space:nowrap;
+}
+.albazLegendDock .legendDockChip{
+  flex:0 0 auto;
+  min-height:38px;
+  padding:7px 10px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  border-radius:14px;
+  border:1px solid #294c6d;
+  background:#081d32;
+  color:#eef6ff;
+  font-size:11px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.albazLegendDock .legendDockChip .sw{
+  width:14px;height:14px;border-radius:4px;display:inline-block;flex:0 0 14px;
+}
+body.albaz-app-mode main{padding-bottom:190px!important}
+@media(max-width:700px){
+  .albazLegendDock{
+    bottom:102px;
+    width:calc(100% - 18px);
+    min-height:52px;
+    padding:7px 8px;
+    border-radius:18px;
+  }
+  .albazLegendDock .legendDockTitle{font-size:10px}
+  .albazLegendDock .legendDockChip{font-size:10px;min-height:34px;padding:6px 8px}
+  body.albaz-app-mode main{padding-bottom:182px!important}
+}
+</style>
+<script id="albaz-visible-legend-dock-v1">
+(function(){
+  'use strict';
+  function build(){
+    if(document.querySelector('.albazLegendDock')) return;
+    var dock=document.createElement('div');
+    dock.className='albazLegendDock';
+    dock.setAttribute('aria-label','مفتاح ألوان الرؤية');
+    dock.innerHTML=
+      '<span class="legendDockTitle">ألوان الرؤية</span>'+
+      '<span class="legendDockChip"><span class="sw" style="background:#108a00"></span><b>A</b> مرئي بسهولة</span>'+
+      '<span class="legendDockChip"><span class="sw" style="background:#63ff32"></span><b>B</b> مرئي</span>'+
+      '<span class="legendDockChip"><span class="sw" style="background:#fff8b8;border:1px solid #b9ab48"></span><b>C</b> حدّي</span>'+
+      '<span class="legendDockChip"><span class="sw" style="background:#ffff00;border:1px solid #b9ab48"></span><b>D</b> بصري</span>'+
+      '<span class="legendDockChip"><span class="sw" style="background:#ff9900"></span><b>E</b> ضعيف جداً</span>'+
+      '<span class="legendDockChip"><span class="sw" style="background:#fff;border:1px solid #789"></span><b>F</b> غير مرئي</span>'+
+      '<span class="legendDockChip"><span class="sw" style="background:#ff0000"></span><b>IMP</b> استحالة</span>';
+    document.body.appendChild(dock);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build,{once:true});
+  else build();
+})();
+</script>
 </body>
 </html>
