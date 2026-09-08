@@ -2186,7 +2186,7 @@ html,body{padding-bottom:130px!important;}
 <meta name="albaz-build" content="V2.2-GITHUB-3D-HARDFIX-2026-09-08">
 
 
-<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V12-VISIBLE-LEGEND">
+<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V13-SMART-MAX-ADAPTIVE">
 
 
 
@@ -2603,12 +2603,19 @@ body.albaz-menu-open #albazOfficialMenuBackdrop{display:block}
           <div class="controlInner">
             <div class="grid2">
               <div>
-                <label>دقة الشبكة</label>
+                <label>نمط حساب الخريطة</label>
+                <select id="mapComputeMode">
+                  <option value="smart" selected>SMART MAX — 1° → 0.25° → 0.05° عند الحدود</option>
+                  <option value="fixed">شبكة ثابتة</option>
+                </select>
+              </div>
+              <div>
+                <label>دقة الشبكة الثابتة</label>
                 <select id="stepDeg">
                   <option value="10">10 درجات — سريع</option>
                   <option value="5">5 درجات — جيد</option>
                   <option value="2">2 درجة — متوسط</option>
-                  <option value="1" selected>1 درجة — أدق للمقارنة</option>
+                  <option value="1" selected>1 درجة — أدق ثابتة</option>
                 </select>
               </div>
               <div>
@@ -2949,6 +2956,16 @@ const norm180 = a => ((a + 180) % 360 + 360) % 360 - 180;
 let baseImg = new Image();
 let lastOverlay = null;
 let SAO_LAST_GRID = null;
+let GLOBE_SMART_TEXTURE = null;
+let ALBAZ_SMART_BUSY = false;
+const ALBAZ_SMART_MAX = Object.freeze({
+  baseStep:1.0,
+  midStep:0.25,
+  fineStep:0.05,
+  boundaryMarginP:0.025,
+  criticalMarginP:0.008,
+  superSample:2
+});
 let CURRENT_POINT_RESULT = null;
 let CURRENT_VIEW_MODE = '3d';
 let GLOBE_INTERACTION_READY = false;
@@ -4042,7 +4059,7 @@ function ensureGlobeBasemapTexture(){
 }
 
 function renderGlobeBasemapOnSphere(globe){
-  const tex = ensureGlobeBasemapTexture();
+  const tex = GLOBE_SMART_TEXTURE || ensureGlobeBasemapTexture();
   if(!tex) return;
 
   const {ctx, cx, cy, radius} = globe;
@@ -4236,7 +4253,7 @@ function drawGlobeGrid(globe){
 }
 
 function renderStoredGridOnGlobe(globe){
-  if(!SAO_LAST_GRID) return;
+  if(!SAO_LAST_GRID || SAO_LAST_GRID.smartTextureActive) return;
   const {ctx, radius} = globe;
   const bundle = SAO_LAST_GRID;
   const step = bundle.step;
@@ -4326,6 +4343,18 @@ function render2DMapFromStoredGrid(){
   const ctx = canvas.getContext('2d');
   const bundle = SAO_LAST_GRID;
   drawBase();
+
+  if(bundle.smartOverlay){
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bundle.smartOverlay,0,0,canvas.width,canvas.height);
+    ctx.restore();
+    enforceOfficialMask();
+    drawGridOverlay();
+    drawPoint(Number(document.getElementById('testLat').value), Number(document.getElementById('testLon').value), getPointLabel());
+    return;
+  }
 
   const overlay = document.createElement('canvas');
   overlay.width = canvas.width;
@@ -4458,7 +4487,204 @@ function animationTick(){
   return new Promise(resolve => requestAnimationFrame(resolve));
 }
 
+/* ALBAZ_SMART_MAX_ENGINE_V1 */
+function nearAlbazDisplayBoundary(r, margin){
+  if(!r || !r.ok || !Number.isFinite(r.P)) return false;
+  const p=r.P;
+  const limits=[0.85,0.376742538335999,0.25,0.10,0.02];
+  let best=Infinity;
+  for(const t of limits) best=Math.min(best,Math.abs(p-t));
+  return best<=margin;
+}
+
+function drawSmartCell(ctx,lat,lon,step,zone,alpha){
+  if(!zone || zone==='F' || zone==='OUT' || zone==='UNK') return;
+  const x0=lonToX(lon-step/2), x1=lonToX(lon+step/2);
+  const y0=latToY(Math.min(MAP.latMax,lat+step/2));
+  const y1=latToY(Math.max(MAP.latMin,lat-step/2));
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(MAP.plotLeft,MAP.plotTop,MAP.plotRight-MAP.plotLeft,MAP.plotBottom-MAP.plotTop);
+  ctx.clip();
+  ctx.globalAlpha=Math.max(0.20,Math.min(0.92,alpha));
+  ctx.fillStyle=colorFor(zone);
+  ctx.fillRect(x0,y0,Math.max(0.08,x1-x0+0.06),Math.max(0.08,y1-y0+0.06));
+  ctx.restore();
+}
+
+function buildSmartGlobeTexture(baseCanvas,smartOverlay){
+  try{
+    const w=Math.max(2,Math.round(MAP.plotRight-MAP.plotLeft));
+    const h=Math.max(2,Math.round(MAP.plotBottom-MAP.plotTop));
+    const mix=document.createElement('canvas');
+    mix.width=w; mix.height=h;
+    const mctx=mix.getContext('2d',{willReadFrequently:true});
+    mctx.drawImage(baseImg,MAP.plotLeft,MAP.plotTop,w,h,0,0,w,h);
+    mctx.drawImage(smartOverlay,MAP.plotLeft,MAP.plotTop,w,h,0,0,w,h);
+    const im=mctx.getImageData(0,0,w,h);
+    return {width:w,height:h,data:im.data};
+  }catch(e){
+    return null;
+  }
+}
+
+async function drawSmartMap(){
+  if(ALBAZ_SMART_BUSY) return;
+  ALBAZ_SMART_BUSY=true;
+  try{
+    GLOBE_SMART_TEXTURE=null;
+    drawBase();
+
+    const {y,m,d}=parseDate();
+    const alpha=Number(document.getElementById('alphaSel')?.value || 0.70);
+    const smoothMode=Number(document.getElementById('smoothSel')?.value || 0);
+    const showBoundary=Number(document.getElementById('boundarySel')?.value || 0);
+    const counts={A:0,B:0,C:0,D:0,E:0,F:0,IMP:0,UNK:0,OUT:0};
+
+    const canvas=document.getElementById('mapCanvas');
+    const SS=ALBAZ_SMART_MAX.superSample||1;
+    const hi=document.createElement('canvas');
+    hi.width=canvas.width*SS;
+    hi.height=canvas.height*SS;
+    const hctx=hi.getContext('2d',{alpha:true});
+    hctx.scale(SS,SS);
+
+    const cache=new Map();
+    let samples=0;
+    const sample=(lat,lon)=>{
+      lon=((lon+180)%360+360)%360-180;
+      lat=Math.max(MAP.latMin+1e-7,Math.min(MAP.latMax-1e-7,lat));
+      const key=lat.toFixed(6)+','+lon.toFixed(6);
+      if(cache.has(key)) return cache.get(key);
+      let r;
+      try{r=calcSAOAt(y,m,d,lat,lon,false);}
+      catch(e){r={ok:false,zone:'OUT',P:NaN,V:NaN};}
+      cache.set(key,r); samples++;
+      return r;
+    };
+
+    const bs=ALBAZ_SMART_MAX.baseStep;
+    const lats=[],lons=[];
+    for(let lat=MAP.latMin+bs/2;lat<MAP.latMax;lat+=bs)lats.push(lat);
+    for(let lon=MAP.lonMin+bs/2;lon<MAP.lonMax;lon+=bs)lons.push(lon);
+    const grid=Array.from({length:lats.length},()=>Array(lons.length));
+
+    updateBottomProgress(1,'SMART MAX: بدأ المسح العالمي 1°...');
+    for(let i=0;i<lats.length;i++){
+      const lat=lats[i];
+      for(let j=0;j<lons.length;j++){
+        const lon=lons[j],r=sample(lat,lon);
+        const z=(r&&r.ok)?(r.zone||'OUT'):'OUT';
+        grid[i][j]={zone:z,q:r?.V,P:r?.P};
+        if(counts[z]!==undefined) counts[z]++; else counts.OUT++;
+        drawSmartCell(hctx,lat,lon,bs,z,alpha);
+      }
+      if(i%4===0){
+        updateBottomProgress(2+36*(i+1)/lats.length,`SMART MAX: مسح 1° — ${i+1}/${lats.length} صف`);
+        await animationTick(); await new Promise(resolve=>setTimeout(resolve,0));
+      }
+    }
+
+    const candidates=[];
+    for(let i=0;i<lats.length;i++){
+      for(let j=0;j<lons.length;j++){
+        const cell=grid[i][j],z=cell?.zone;
+        let edge=nearAlbazDisplayBoundary(cell,ALBAZ_SMART_MAX.boundaryMarginP);
+        for(const pair of [[-1,0],[1,0],[0,-1],[0,1]]){
+          const ii=i+pair[0],jj=(j+pair[1]+lons.length)%lons.length;
+          if(ii>=0 && ii<lats.length && grid[ii][jj]?.zone!==z){edge=true;break;}
+        }
+        if(edge)candidates.push([i,j]);
+      }
+    }
+
+    const ms=ALBAZ_SMART_MAX.midStep;
+    const nMid=Math.round(bs/ms);
+    const critical=[];
+    const criticalSet=new Set();
+    const addCritical=(lat0,lon0)=>{
+      lon0=((lon0+180)%360+360)%360-180;
+      const key=lat0.toFixed(4)+','+lon0.toFixed(4);
+      if(!criticalSet.has(key)){criticalSet.add(key);critical.push([lat0,lon0]);}
+    };
+
+    updateBottomProgress(40,`SMART MAX: ${candidates.length} خلية انتقال إلى 0.25°...`);
+    await animationTick();
+
+    for(let k=0;k<candidates.length;k++){
+      const [i,j]=candidates[k];
+      const lat0=lats[i]-bs/2,lon0=lons[j]-bs/2,coarseZone=grid[i][j]?.zone;
+      for(let a=0;a<nMid;a++){
+        for(let b=0;b<nMid;b++){
+          const lat=lat0+ms/2+a*ms,lon=lon0+ms/2+b*ms;
+          if(lat<=MAP.latMin || lat>=MAP.latMax) continue;
+          const r=sample(lat,lon),z=(r&&r.ok)?(r.zone||'OUT'):'OUT';
+          drawSmartCell(hctx,lat,lon,ms,z,alpha);
+          if(z!==coarseZone || nearAlbazDisplayBoundary(r,ALBAZ_SMART_MAX.criticalMarginP)){
+            addCritical(lat-ms/2,lon-ms/2);
+          }
+        }
+      }
+      if(k%24===0){
+        updateBottomProgress(40+27*(k+1)/Math.max(1,candidates.length),`SMART MAX: 0.25° — ${k+1}/${candidates.length}`);
+        await animationTick(); await new Promise(resolve=>setTimeout(resolve,0));
+      }
+    }
+
+    const fs=ALBAZ_SMART_MAX.fineStep;
+    const nFine=Math.round(ms/fs);
+    updateBottomProgress(68,`SMART MAX: ${critical.length} خلية حرجة إلى 0.05°...`);
+    await animationTick();
+
+    for(let k=0;k<critical.length;k++){
+      const [lat0,lon0]=critical[k];
+      for(let a=0;a<nFine;a++){
+        for(let b=0;b<nFine;b++){
+          const lat=lat0+fs/2+a*fs,lon=lon0+fs/2+b*fs;
+          if(lat<=MAP.latMin || lat>=MAP.latMax) continue;
+          const r=sample(lat,lon),z=(r&&r.ok)?(r.zone||'OUT'):'OUT';
+          drawSmartCell(hctx,lat,lon,fs,z,alpha);
+        }
+      }
+      if(k%48===0){
+        updateBottomProgress(68+27*(k+1)/Math.max(1,critical.length),`SMART MAX: 0.05° — ${k+1}/${critical.length}`);
+        await animationTick(); await new Promise(resolve=>setTimeout(resolve,0));
+      }
+    }
+
+    const smartOverlay=document.createElement('canvas');
+    smartOverlay.width=canvas.width;
+    smartOverlay.height=canvas.height;
+    const sctx=smartOverlay.getContext('2d');
+    sctx.imageSmoothingEnabled=true;
+    sctx.imageSmoothingQuality='high';
+    sctx.drawImage(hi,0,0,smartOverlay.width,smartOverlay.height);
+
+    SAO_LAST_GRID={
+      grid,lats,lons,step:bs,alpha,smoothMode,showBoundary,counts,y,m,d,
+      smart:true,smartOverlay,smartTextureActive:true,
+      smartStats:{samples,candidates:candidates.length,critical:critical.length,baseStep:bs,midStep:ms,fineStep:fs,superSample:SS}
+    };
+
+    GLOBE_SMART_TEXTURE=buildSmartGlobeTexture(canvas,smartOverlay);
+
+    if(CURRENT_VIEW_MODE==='2d') render2DMapFromStoredGrid();
+    else renderGlobeScene();
+
+    document.getElementById('sA').textContent=counts.A;
+    document.getElementById('sB').textContent=counts.B;
+    document.getElementById('sC').textContent=counts.C+counts.D+counts.E;
+    document.getElementById('sD').textContent=counts.IMP;
+    document.getElementById('sNA').textContent=counts.F+counts.UNK+counts.OUT;
+
+    updateBottomProgress(100,`اكتملت SMART MAX — 1° / 0.25° / 0.05° + Direct Point — ${samples.toLocaleString('en-US')} حساب — Supersampling ×${SS}`);
+  }finally{
+    ALBAZ_SMART_BUSY=false;
+  }
+}
+
 async function drawMap(){
+  GLOBE_SMART_TEXTURE = null;
   drawBase();
 
   const {y,m,d} = parseDate();
@@ -5629,7 +5855,11 @@ document.getElementById('dateInput').addEventListener('change', () => {
 });
 updateDateLabel();
 
-document.getElementById('runBtn').addEventListener('click', drawMap);
+document.getElementById('runBtn').addEventListener('click', () => {
+  const mode=document.getElementById('mapComputeMode')?.value || 'smart';
+  if(mode==='smart') drawSmartMap();
+  else drawMap();
+});
 document.getElementById('pointBtn').addEventListener('click', calcPoint);
 document.getElementById('auditBtn').addEventListener('click', runAuditCities);
 document.getElementById('auditWorldCapitalsBtn').addEventListener('click', runWorldCapitalsAudit);
@@ -5639,6 +5869,7 @@ document.getElementById('baghdadBtn').addEventListener('click', applyBaghdad);
 document.getElementById('capitalSelect').addEventListener('change', applySelectedCapital);
 document.getElementById('clearBtn').addEventListener('click', () => {
   SAO_LAST_GRID = null;
+  GLOBE_SMART_TEXTURE = null;
   document.getElementById('bar').style.width = '0%';
   updateBottomProgress(0, 'تم مسح طبقة ALBAZ-NE وإظهار العرض الأساسي فقط.');
   if(CURRENT_VIEW_MODE === '2d'){
@@ -6137,7 +6368,7 @@ function openProfessionalReportNativeSafe(){
     hero.className='albazMobileHero';
     hero.innerHTML=`
       <div class="albazHeroTop">
-        <div class="albazBuildBadge">v2.2.1 GLOBAL SMART MAX • ALBAZ-NE V2.2</div>
+        <div class="albazBuildBadge">v2.2.2 SMART MAX • ALBAZ-NE V2.2</div>
         <button class="albazMenuBtn" id="albazMenuBtn" type="button" aria-label="القائمة">☰</button>
       </div>
       <div class="albazHeroMain">
@@ -6162,7 +6393,7 @@ function openProfessionalReportNativeSafe(){
     card.innerHTML=`
       <div class="albazMobileControlHead">
         <b>الخريطة الذكية 2D</b>
-        <span>GLOBAL SMART MAX + DIRECT POINT</span>
+        <span>GLOBAL SMART MAX • 1° → 0.25° → 0.05° • DIRECT POINT</span>
       </div>
       <div class="albazMobileFields">
         <div class="albazMobileField">
@@ -6174,10 +6405,11 @@ function openProfessionalReportNativeSafe(){
           <input id="albazMobileDate" type="date">
         </div>
       </div>
-      <button id="albazMobileRun" class="albazMobileRun" type="button">احسب الخريطة الذكية عالية الدقة 1°</button>
+      <button id="albazMobileRun" class="albazMobileRun" type="button">احسب SMART MAX — 1° → 0.25° → 0.05°</button>
       <div class="albazMobileActions">
         <button id="albazMobileOriginal" type="button">الخريطة الأصلية</button>
         <button id="albazMobilePoint" type="button">حلّ الموقع</button>
+        <button id="albazMobileFixed1" type="button">شبكة ثابتة 1°</button>
         <button id="albazMobileQuick" type="button">معاينة سريعة 5°</button>
         <button id="albazMobile3D" type="button">افتح 3D</button>
         <button id="albazMobilePNG" type="button">حفظ PNG</button>
@@ -6220,16 +6452,25 @@ function openProfessionalReportNativeSafe(){
     }
 
     byId('albazMobileRun').addEventListener('click',function(){
-      const step=byId('stepDeg');
-      if(step) step.value='1';
+      const mode=byId('mapComputeMode');
+      if(mode) mode.value='smart';
       const st=byId('albazMobileStatus');
-      if(st) st.textContent='حساب عالي الدقة — شبكة 1°...';
+      if(st) st.textContent='SMART MAX — 1° → 0.25° → 0.05° عند الحدود...';
       byId('runBtn')?.click();
     });
     byId('albazMobileOriginal').addEventListener('click',function(){ byId('clearBtn')?.click(); });
     byId('albazMobilePoint').addEventListener('click',function(){ byId('pointBtn')?.click(); });
+    byId('albazMobileFixed1').addEventListener('click',function(){
+      const mode=byId('mapComputeMode'),step=byId('stepDeg');
+      if(mode) mode.value='fixed';
+      if(step) step.value='1';
+      const st=byId('albazMobileStatus');
+      if(st) st.textContent='شبكة ثابتة 1°...';
+      byId('runBtn')?.click();
+    });
     byId('albazMobileQuick').addEventListener('click',function(){
-      const step=byId('stepDeg');
+      const mode=byId('mapComputeMode'),step=byId('stepDeg');
+      if(mode) mode.value='fixed';
       if(step) step.value='5';
       const st=byId('albazMobileStatus');
       if(st) st.textContent='معاينة سريعة — شبكة 5°...';
@@ -6721,7 +6962,7 @@ function openProfessionalReportNativeSafe(){
   position:fixed;
   left:50%;
   transform:translateX(-50%);
-  bottom:104px;
+  bottom:calc(104px + env(safe-area-inset-bottom,0px));
   z-index:940;
   width:min(980px,calc(100% - 30px));
   min-height:58px;
@@ -6738,7 +6979,9 @@ function openProfessionalReportNativeSafe(){
   overflow-x:auto;
   scrollbar-width:thin;
 }
-body.albaz-home-mode .albazLegendDock{display:none!important}
+body.albaz-home-mode .albazLegendDock,
+body.albaz-drawer-open .albazLegendDock,
+body.albaz-menu-open .albazLegendDock{display:none!important}
 .albazLegendDock .legendDockTitle{
   flex:0 0 auto;
   color:#ffe09a;
@@ -6768,7 +7011,7 @@ body.albaz-home-mode .albazLegendDock{display:none!important}
 body.albaz-app-mode main{padding-bottom:190px!important}
 @media(max-width:700px){
   .albazLegendDock{
-    bottom:102px;
+    bottom:calc(102px + env(safe-area-inset-bottom,0px));
     width:calc(100% - 18px);
     min-height:52px;
     padding:7px 8px;
