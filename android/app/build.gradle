@@ -1,0 +1,63 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.albaz.smartcrescentatlas'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.albaz.smartcrescentatlas"
+        minSdk 26
+        targetSdk 35
+        versionCode 221
+        versionName "2.2.1"
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    packaging {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}']
+        }
+    }
+}
+
+/*
+ * مصدر الويب الرسمي يبقى في جذر المستودع.
+ * قبل كل Build تُنسخ النسخة الحالية حرفيًا إلى Android assets.
+ * لا يتم تعديل المحرك العلمي هنا.
+ */
+def webAssetsDir = file("$projectDir/src/main/assets")
+tasks.register("syncOfficialWebAssets", Copy) {
+    from("$rootDir/../index.html")
+    from("$rootDir/../ALBAZ_NE_V2_2_USER_GUIDE_AR.html")
+    from("$rootDir/../site.webmanifest")
+    from("$rootDir/../sw.js")
+    into(webAssetsDir)
+}
+tasks.named("preBuild").configure {
+    dependsOn("syncOfficialWebAssets")
+}
+
+dependencies {
+}
