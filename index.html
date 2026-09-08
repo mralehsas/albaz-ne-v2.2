@@ -5863,81 +5863,142 @@ if(document.readyState === 'loading'){
 </script>
 
 
+<style id="albaz-odeh-about-style">
+#hilalAboutOverlay{
+  position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;
+  padding:18px;background:rgba(1,8,16,.78);backdrop-filter:blur(8px)
+}
+#hilalAboutOverlay.showAbout{display:flex}
+.hilalAboutCard{
+  width:min(92vw,720px);max-height:88vh;overflow:auto;border-radius:26px;
+  border:1px solid rgba(226,190,105,.55);
+  background:
+    radial-gradient(circle at 88% 0%,rgba(226,190,105,.12),transparent 30%),
+    linear-gradient(180deg,#0b2036,#061321);
+  box-shadow:0 28px 90px rgba(0,0,0,.55);padding:22px;color:#eef6ff
+}
+.aboutHead{
+  display:flex;align-items:center;gap:14px;padding-bottom:14px;margin-bottom:14px;
+  border-bottom:1px solid rgba(226,190,105,.28)
+}
+.aboutMoon{
+  width:62px;height:62px;flex:0 0 62px;border-radius:20px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#f5d681,#c99536);color:#071321;font-size:34px;
+  box-shadow:0 12px 26px rgba(0,0,0,.24)
+}
+.aboutTitleWrap h2{margin:0;color:#ffe8aa;font-size:23px}
+.aboutVersion{margin-top:5px;color:#afc0d4;font-size:12px;direction:ltr;text-align:right}
+.aboutSection{
+  margin:10px 0;padding:13px 14px;border-radius:17px;
+  border:1px solid rgba(49,88,124,.72);background:rgba(9,29,49,.72);
+  color:#dce8f4;line-height:1.9;font-size:13px
+}
+.aboutSection strong{color:#ffe1a0;font-size:14px}
+.aboutSection ul{margin:8px 0 0;padding-right:20px}
+.aboutEquation{
+  direction:ltr;text-align:center;font-family:Consolas,monospace;color:#fff0be;
+  padding:9px;border-radius:12px;background:#06111f;margin-top:8px
+}
+.aboutCredit{
+  text-align:center;color:#dce8f4
+}
+.aboutCredit b{color:#ffe1a0}
+.hilalAboutActions{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px
+}
+.hilalAboutClose,.hilalAboutGuide{
+  min-height:48px;border-radius:16px;border:0;font-weight:900;cursor:pointer
+}
+.hilalAboutClose{background:linear-gradient(180deg,#efcf7b,#c89537);color:#171109}
+.hilalAboutGuide{background:#173553;color:#eef6ff;border:1px solid #345d85}
+@media(max-width:620px){
+  .hilalAboutCard{padding:15px;border-radius:22px}
+  .aboutHead{align-items:flex-start}
+  .aboutMoon{width:54px;height:54px;flex-basis:54px}
+  .aboutTitleWrap h2{font-size:20px}
+  .hilalAboutActions{grid-template-columns:1fr}
+}
+</style>
+
 <div id="hilalAboutOverlay" role="dialog" aria-modal="true" aria-label="حول البرنامج">
   <div class="hilalAboutCard">
-    <div class="aboutMoon">🌙</div>
-    <h2>حول البرنامج</h2>
+    <div class="aboutHead">
+      <div class="aboutMoon">☾</div>
+      <div class="aboutTitleWrap">
+        <h2>حول البرنامج</h2>
+        <div class="aboutVersion">ALBAZ SMART ATLAS • ALBAZ-NE V2.2</div>
+      </div>
+    </div>
 
     <div class="aboutSection">
       <strong>معيار الباز لرؤية الهلال — ALBAZ-NE V2.2</strong><br>
-      نسخة مستقلة مبنية على نفس روح صفحات عودة ويالوب، بمحرك ALBAZ-NE V2.2 الذي يستخدم ARCV وعرض الهلال W عند الغروب وفق المعادلة المجمدة.
+      أطلس فلكي ذكي لدراسة إمكانية رؤية الهلال عالميًا، مبني على معيار الباز المجمد باستخدام فرق الارتفاع الزاوي ARCV وعرض الهلال W عند الغروب المحلي.
     </div>
 
     <div class="aboutSection">
-      <strong>فكرة البرنامج</strong><br>
-      يهدف البرنامج إلى تقديم أداة عملية لدراسة هلال بداية الشهر القمري، من خلال حساب وعرض مؤشرات الرؤية مثل مكث القمر بعد غروب الشمس، الاستطالة، فرق الارتفاع، فرق السمت، وعناصر الرصد المرتبطة بإمكانية مشاهدة الهلال.
+      <strong>المعادلة الرسمية</strong>
+      <div class="aboutEquation">V_Albaz = ARCV + 5.727829800002835 × W − 11.737684300761264</div>
+      القرار العلمي: يكون الهلال ضمن منطقة الرؤية عندما تكون <b>V_Albaz ≥ 0</b>، وهي مكافئة لحد الاحتمال المجمد <b>P ≥ 0.376742538335999</b>.
     </div>
 
     <div class="aboutSection">
-      <strong>ماذا يعرض البرنامج؟</strong>
+      <strong>ماذا يقدم البرنامج؟</strong>
       <ul>
-        <li>خريطة عالمية لمناطق إمكانية رؤية الهلال.</li>
-        <li>تمييز حالات الرؤية وفق قرار ALBAZ-NE المجمد، مع تدرج لوني بصري للعرض.</li>
-        <li>دعم يوم الرصد واليوم التالي للمقارنة الفلكية.</li>
-        <li>عرض بيانات تساعد على فهم سبب سهولة أو صعوبة الرؤية.</li>
-        <li>واجهة عربية مناسبة للعمل على أندرويد عبر Capacitor.</li>
+        <li>خريطة عالمية 2D لمناطق رؤية الهلال وفق ALBAZ-NE V2.2.</li>
+        <li>كرة أرضية 3D تفاعلية لعرض مناطق الرؤية على سطح الأرض.</li>
+        <li>حساب مباشر لأي موقع أو عاصمة مع ARCV وW وV_Albaz واحتمال الرؤية.</li>
+        <li>التدرج اللوني التفصيلي لمناطق القوة والانتقال وعدم الرؤية.</li>
+        <li>تقارير احترافية وتصدير PNG وHTML وPDF.</li>
       </ul>
     </div>
 
     <div class="aboutSection">
-      <strong>تنبيه علمي</strong><br>
-      النتائج المعروضة حسابية فلكية، أما الرؤية الفعلية للهلال فقد تتأثر بعوامل الطقس، صفاء الأفق، الرطوبة، الغبار، خبرة الراصد، ووسيلة الرصد المستخدمة.
+      <strong>الدقة والتحقق</strong><br>
+      تم اختبار ALBAZ-NE V2.2 خارجيًا على أرصاد ICOP 2026 القابلة للتقييم، وحقق Accuracy = 97.62% وAUC = 0.9977 وSpecificity = 100%، دون إعادة تدريب أو تعديل للحد بعد رؤية النتائج.
     </div>
 
     <div class="aboutSection">
-      <strong>إعداد</strong><br>
-      الفيزيائي عمر الباز<br>
-      رئيس مبرمجين أقدم<br>
-      عضو الاتحاد العربي لعلوم الفضاء والفلك
+      <strong>تنبيه علمي</strong><br>
+      الخريطة أداة حسابية فلكية متقدمة، أما الرؤية الفعلية فقد تتأثر بصفاء الأفق والشفافية الجوية والغبار والرطوبة وخبرة الراصد ووسيلة الرصد.
     </div>
 
-    <button class="hilalAboutClose" type="button" onclick="closeHilalAbout()">إغلاق</button>
+    <div class="aboutSection aboutCredit">
+      <strong>إعداد وتطوير</strong><br>
+      <b>الفيزيائي عمر الباز</b><br>
+      رئيس مبرمجين أقدم — عضو الاتحاد العربي لعلوم الفلك والفضاء
+    </div>
+
+    <div class="hilalAboutActions">
+      <button class="hilalAboutClose" type="button" onclick="closeHilalAbout()">إغلاق</button>
+      <button class="hilalAboutGuide" type="button" onclick="window.open('ALBAZ_NE_V2_2_FULL_CRITERION_AR.pdf','_blank')">الدليل العلمي PDF</button>
+    </div>
   </div>
 </div>
 
-
 <script>
 (function(){
-  window.openHilalAbout = function(){
-    const box = document.getElementById('hilalAboutOverlay');
-    if(box){ box.classList.add('showAbout'); }
+  window.openHilalAbout=function(){
+    const box=document.getElementById('hilalAboutOverlay');
+    if(box) box.classList.add('showAbout');
   };
-
-  window.closeHilalAbout = function(){
-    const box = document.getElementById('hilalAboutOverlay');
-    if(box){ box.classList.remove('showAbout'); }
+  window.closeHilalAbout=function(){
+    const box=document.getElementById('hilalAboutOverlay');
+    if(box) box.classList.remove('showAbout');
   };
-
   function initHilalAboutOnly(){
-    const aboutBtn = document.getElementById('hilalAboutBtn');
-    if(aboutBtn){ aboutBtn.addEventListener('click', window.openHilalAbout); }
-
-    const overlay = document.getElementById('hilalAboutOverlay');
+    const aboutBtn=document.getElementById('hilalAboutBtn');
+    if(aboutBtn) aboutBtn.addEventListener('click',window.openHilalAbout);
+    const overlay=document.getElementById('hilalAboutOverlay');
     if(overlay){
-      overlay.addEventListener('click', function(e){
-        if(e.target === overlay){ window.closeHilalAbout(); }
+      overlay.addEventListener('click',function(ev){
+        if(ev.target===overlay) window.closeHilalAbout();
       });
     }
   }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', initHilalAboutOnly);
-  }else{
-    initHilalAboutOnly();
-  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initHilalAboutOnly);
+  else initHilalAboutOnly();
 })();
 </script>
-
 
 <script id="albaz-yallop-fast-open-final-script">
 (function(){
