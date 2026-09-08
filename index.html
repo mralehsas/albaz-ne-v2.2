@@ -2330,7 +2330,7 @@ body:not(.albaz-drawer-open) .albazMobileBackdrop{display:none!important}
 
 /* Bottom nav */
 .albazMobileBottomNav{
-  display:grid!important;grid-template-columns:repeat(4,1fr)!important;position:fixed!important;z-index:800!important;
+  display:grid!important;grid-template-columns:repeat(4,1fr)!important;position:fixed!important;z-index:950!important;
   left:50%!important;transform:translateX(-50%)!important;bottom:10px!important;width:calc(100% - 28px)!important;max-width:650px!important;
   padding:8px!important;border-radius:27px!important;border:1px solid rgba(232,189,89,.28)!important;background:rgba(5,17,31,.97)!important;
   box-shadow:0 18px 48px rgba(0,0,0,.48)!important;backdrop-filter:blur(14px)!important;
@@ -6562,5 +6562,96 @@ function openProfessionalReportNativeSafe(){
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 })();
-</script></body>
+</script>
+<style id="albaz-bottom-nav-hardfix-v1-style">
+.albazMobileBottomNav{
+  z-index:950!important;
+  bottom:max(10px,env(safe-area-inset-bottom))!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  isolation:isolate!important;
+}
+.albazMobileBottomNav button,
+.albazMobileBottomNav button *{
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+}
+</style>
+<script id="albaz-bottom-nav-hardfix-v1">
+(function(){
+  'use strict';
+  function byId(id){return document.getElementById(id)}
+  function active(mode){
+    var map={home:'albazNavHome','2d':'albazNav2D','3d':'albazNav3D',report:'albazNavReport'};
+    ['albazNavHome','albazNav2D','albazNav3D','albazNavReport'].forEach(function(k){
+      var b=byId(k); if(b) b.classList.toggle('active',map[mode]===k);
+    });
+  }
+  function route(id){
+    document.body.classList.remove('albaz-menu-open','albaz-drawer-open');
+    if(id==='albazNavHome'){
+      if(typeof window.albazOfficialShowHome==='function') window.albazOfficialShowHome();
+      else{
+        document.body.classList.add('albaz-home-mode');
+        document.body.classList.remove('albaz-app-mode');
+        window.scrollTo({top:0,behavior:'smooth'});
+        active('home');
+      }
+      return;
+    }
+    if(id==='albazNav2D'){
+      if(typeof window.albazOfficialShow2D==='function') window.albazOfficialShow2D();
+      else{
+        byId('view2DBtn')?.click();
+        document.body.classList.remove('albaz-home-mode');
+        document.body.classList.add('albaz-app-mode');
+        active('2d');
+        setTimeout(function(){byId('albazMobileControlCard')?.scrollIntoView({behavior:'smooth',block:'start'})},40);
+      }
+      return;
+    }
+    if(id==='albazNav3D'){
+      if(typeof window.albazOfficialShow3D==='function') window.albazOfficialShow3D();
+      else{
+        byId('view3DBtn')?.click();
+        document.body.classList.remove('albaz-home-mode');
+        document.body.classList.add('albaz-app-mode');
+        active('3d');
+        setTimeout(function(){byId('mapCard')?.scrollIntoView({behavior:'smooth',block:'start'})},50);
+      }
+      return;
+    }
+    if(id==='albazNavReport'){
+      if(typeof window.albazOfficialShow2D==='function') window.albazOfficialShow2D();
+      else{
+        document.body.classList.remove('albaz-home-mode');
+        document.body.classList.add('albaz-app-mode');
+      }
+      active('report');
+      setTimeout(function(){
+        document.body.classList.add('albaz-drawer-open');
+        byId('exportCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+      },90);
+    }
+  }
+  function bind(){
+    var nav=document.querySelector('.albazMobileBottomNav');
+    if(!nav){setTimeout(bind,80);return}
+    if(nav.dataset.hardNavBound==='1') return;
+    nav.dataset.hardNavBound='1';
+    nav.addEventListener('click',function(e){
+      var btn=e.target.closest('button');
+      if(!btn || !nav.contains(btn)) return;
+      if(!/^albazNav(Home|2D|3D|Report)$/.test(btn.id)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+      route(btn.id);
+    },true);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind,{once:true});
+  else bind();
+})();
+</script>
+</body>
 </html>
