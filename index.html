@@ -6178,11 +6178,11 @@ function openProfessionalReportNativeSafe(){
           <input id="albazMobileDate" type="date">
         </div>
       </div>
-      <button id="albazMobileRun" class="albazMobileRun" type="button">احسب الخريطة الذكية عالية الدقة</button>
+      <button id="albazMobileRun" class="albazMobileRun" type="button">احسب الخريطة الذكية عالية الدقة 1°</button>
       <div class="albazMobileActions">
         <button id="albazMobileOriginal" type="button">الخريطة الأصلية</button>
         <button id="albazMobilePoint" type="button">حلّ الموقع</button>
-        <button id="albazMobileQuick" type="button">معاينة سريعة</button>
+        <button id="albazMobileQuick" type="button">معاينة سريعة 5°</button>
         <button id="albazMobile3D" type="button">افتح 3D</button>
         <button id="albazMobilePNG" type="button">حفظ PNG</button>
       </div>
@@ -6223,11 +6223,20 @@ function openProfessionalReportNativeSafe(){
       srcCap.addEventListener('change',function(){ mobCap.value=srcCap.value; });
     }
 
-    byId('albazMobileRun').addEventListener('click',function(){ byId('runBtn')?.click(); });
+    byId('albazMobileRun').addEventListener('click',function(){
+      const step=byId('stepDeg');
+      if(step) step.value='1';
+      const st=byId('albazMobileStatus');
+      if(st) st.textContent='حساب عالي الدقة — شبكة 1°...';
+      byId('runBtn')?.click();
+    });
     byId('albazMobileOriginal').addEventListener('click',function(){ byId('clearBtn')?.click(); });
     byId('albazMobilePoint').addEventListener('click',function(){ byId('pointBtn')?.click(); });
     byId('albazMobileQuick').addEventListener('click',function(){
-      byId('stepDeg').value='5';
+      const step=byId('stepDeg');
+      if(step) step.value='5';
+      const st=byId('albazMobileStatus');
+      if(st) st.textContent='معاينة سريعة — شبكة 5°...';
       byId('runBtn')?.click();
     });
     byId('albazMobile3D').addEventListener('click',function(){
