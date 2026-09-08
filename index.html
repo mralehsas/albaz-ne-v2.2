@@ -7383,5 +7383,77 @@ function openProfessionalReportNativeSafe(){
   else setTimeout(done,2300);
   window.addEventListener('load',function(){setTimeout(done,2550)},{once:true});
 })();
+</script>
+<script id="albaz-official-app-runtime-v1">
+(function(){
+  'use strict';
+  let deferredInstallPrompt=null;
+
+  function id(x){return document.getElementById(x)}
+
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault();
+    deferredInstallPrompt=e;
+    const btn=id('albazInstallAppBtn');
+    if(btn) btn.hidden=false;
+  });
+
+  window.albazInstallOfficialApp=async function(){
+    if(!deferredInstallPrompt){
+      alert('التثبيت المباشر غير متاح في هذا المتصفح الآن. افتح قائمة المتصفح واختر تثبيت التطبيق / Add to Home screen.');
+      return;
+    }
+    deferredInstallPrompt.prompt();
+    try{await deferredInstallPrompt.userChoice}catch(_e){}
+    deferredInstallPrompt=null;
+    const btn=id('albazInstallAppBtn');
+    if(btn) btn.hidden=true;
+  };
+
+  function addInstallButton(){
+    if(id('albazInstallAppBtn')) return;
+    const drawer=document.querySelector('.panelStack');
+    if(!drawer) return;
+    const btn=document.createElement('button');
+    btn.id='albazInstallAppBtn';
+    btn.type='button';
+    btn.hidden=true;
+    btn.textContent='⬇ تثبيت تطبيق ALBAZ الرسمي';
+    btn.style.cssText='min-height:50px;border-radius:16px;border:1px solid rgba(232,189,89,.40);background:linear-gradient(180deg,#f0cf78,#d29a39);color:#171109;font-weight:900;margin:0 0 8px;';
+    btn.addEventListener('click',window.albazInstallOfficialApp);
+    drawer.insertBefore(btn,drawer.firstChild);
+  }
+
+  function routeFromURL(){
+    const q=new URLSearchParams(location.search);
+    const view=(q.get('view')||'').toLowerCase();
+    setTimeout(function(){
+      if(view==='2d' && window.albazOfficialShow2D) window.albazOfficialShow2D();
+      else if(view==='3d' && window.albazOfficialShow3D) window.albazOfficialShow3D();
+      else if(view==='report'){
+        if(window.albazOfficialShow2D) window.albazOfficialShow2D();
+        setTimeout(function(){id('professionalReportBtn')?.click()},220);
+      }
+      else if(view==='about'){
+        if(window.albazOfficialShowHome) window.albazOfficialShowHome();
+        setTimeout(function(){window.openHilalAbout?.()},180);
+      }
+      else if(window.albazOfficialShowHome) window.albazOfficialShowHome();
+    },120);
+  }
+
+  function addOfficialMeta(){
+    document.documentElement.setAttribute('data-albaz-official-app','v1');
+    document.body.setAttribute('data-scientific-engine','ALBAZ-NE V2.2');
+  }
+
+  function init(){
+    addOfficialMeta();
+    addInstallButton();
+    routeFromURL();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
+})();
 </script></body>
 </html>
