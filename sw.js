@@ -1,4 +1,4 @@
-const CACHE_NAME = 'albaz-smart-crescent-atlas-v12-2026-09-08-visible-legend';
+const CACHE_NAME = 'albaz-smart-crescent-atlas-v13-2026-09-08-smart-max';
 const APP_SHELL = [
   './',
   './index.html',
