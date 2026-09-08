@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ALBAZ" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/albaz_navy</item>
+        <item name="android:colorAccent">@color/albaz_gold</item>
+        <item name="android:statusBarColor">@color/albaz_navy</item>
+        <item name="android:navigationBarColor">@color/albaz_navy</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowDisablePreview">false</item>
+    </style>
+</resources>
