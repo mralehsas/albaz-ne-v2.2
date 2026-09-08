@@ -41,7 +41,7 @@
 `BUILD_DEBUG_APK.bat`
 
 الناتج:
-`Dist/ALBAZ_Smart_Crescent_Atlas_v2.2.1_DEBUG.apk`
+`Dist/ALBAZ_Smart_Crescent_Atlas_v2.2.2_DEBUG.apk`
 
 ## Release
 شغّل:
