@@ -2183,12 +2183,7 @@ html,body{padding-bottom:130px!important;}
 </style>
 
 
-
-<link rel="manifest" href="site.webmanifest">
-<meta name="theme-color" content="#07111f">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="albaz-build" content="V2.2-GITHUB-3D-HARDFIX-2026-09-08">
 </head>
 <body>
 <div id="hilalSplashScreen" aria-label="شاشة افتتاح تطبيق معيار الباز لرؤية الهلال — ALBAZ-NE V2.2">
@@ -4623,14 +4618,6 @@ function makeReportHTML(includeScript=false){
 </div>
 <!-- ALBAZ_NE_V2_2_WEB_PATCH -->
 <!-- ALBAZ_NE_V2_2_WEB_BUILD_2026_09_08 -->
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./sw.js').catch(function(){ /* site remains fully usable */ });
-  });
-}
-</script>
 </body>
 </html>`;
 }
@@ -5378,13 +5365,6 @@ if(document.readyState === 'loading'){
       عضو الاتحاد العربي لعلوم الفضاء والفلك
     </div>
 
-    <div class="aboutSection" style="text-align:center">
-      <a href="ALBAZ_NE_V2_2_FULL_CRITERION_AR.pdf" target="_blank" rel="noopener"
-         style="display:inline-block;padding:11px 18px;border-radius:12px;background:#d7a640;color:#08111f;font-weight:800;text-decoration:none;border:1px solid #f3d37a">
-        📘 فتح الدليل العلمي الكامل PDF
-      </a>
-    </div>
-
     <button class="hilalAboutClose" type="button" onclick="closeHilalAbout()">إغلاق</button>
   </div>
 </div>
@@ -5533,5 +5513,193 @@ function openProfessionalReportNativeSafe(){
   else hideCapitalCalibrationPanel();
 })();
 </script>
+
+<!-- =========================================================
+ ALBAZ-NE V2.2 — GITHUB PAGES 3D HARD BOOT FIX
+ UI/RUNTIME ONLY — SCIENTIFIC EQUATIONS UNCHANGED
+ ========================================================= -->
+<script id="albaz-github-pages-3d-hardfix">
+(function(){
+  'use strict';
+
+  let bootTimers = [];
+  let resizeTimer = 0;
+
+  function emergencyDraw(){
+    try{
+      const stage = document.getElementById('globeStage');
+      const canvas = document.getElementById('globeCanvas');
+      if(!stage || !canvas) return;
+
+      stage.style.display = 'block';
+      const rect = stage.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(320, Math.round(rect.width || stage.clientWidth || 960));
+      const height = Math.max(420, Math.round(window.innerWidth <= 760 ? 520 : 720));
+
+      canvas.width = Math.round(width*dpr);
+      canvas.height = Math.round(height*dpr);
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      canvas.style.display = 'block';
+
+      const ctx = canvas.getContext('2d');
+      if(!ctx) return;
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.clearRect(0,0,width,height);
+
+      const bg = ctx.createLinearGradient(0,0,0,height);
+      bg.addColorStop(0,'#061220');
+      bg.addColorStop(1,'#081421');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0,0,width,height);
+
+      for(let i=0;i<70;i++){
+        const x=((i*97)%1000)/1000*width;
+        const y=((i*131)%1000)/1000*height;
+        ctx.globalAlpha=(i%7===0)?0.8:0.36;
+        ctx.beginPath();
+        ctx.fillStyle='#f5fbff';
+        ctx.arc(x,y,(i%5===0)?1.5:0.8,0,Math.PI*2);
+        ctx.fill();
+      }
+      ctx.globalAlpha=1;
+
+      const cx=width/2, cy=height*.54;
+      const radius=Math.min(width*.32,height*.30);
+      const g=ctx.createRadialGradient(
+        cx-radius*.35,cy-radius*.42,radius*.15,
+        cx,cy,radius
+      );
+      g.addColorStop(0,'#55c3ff');
+      g.addColorStop(.42,'#24699d');
+      g.addColorStop(1,'#0b2036');
+
+      ctx.beginPath();
+      ctx.arc(cx,cy,radius,0,Math.PI*2);
+      ctx.fillStyle=g;
+      ctx.fill();
+
+      ctx.strokeStyle='rgba(255,224,145,.68)';
+      ctx.lineWidth=2;
+      ctx.stroke();
+
+      ctx.fillStyle='#ffe6a5';
+      ctx.font='bold 18px Tahoma,Arial,sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('ALBAZ-NE V2.2 3D Globe',cx,Math.max(28,cy-radius-22));
+    }catch(err){
+      console.error('ALBAZ emergency 3D draw failed:',err);
+    }
+  }
+
+  function hardBoot3D(){
+    try{
+      const stage = document.getElementById('globeStage');
+      const canvas = document.getElementById('globeCanvas');
+      const mapCanvas = document.getElementById('mapCanvas');
+      if(!stage || !canvas) return;
+
+      if(document.body){
+        document.body.classList.add('sao-view-3d');
+        document.body.classList.remove('sao-view-2d');
+      }
+
+      stage.style.display='block';
+      canvas.style.display='block';
+      if(mapCanvas) mapCanvas.style.display='none';
+
+      if(typeof initGlobeInteraction === 'function'){
+        initGlobeInteraction();
+      }
+
+      if(typeof setMapView === 'function'){
+        setMapView('3d');
+      }else if(typeof renderGlobeScene === 'function'){
+        renderGlobeScene();
+      }else{
+        emergencyDraw();
+        return;
+      }
+
+      requestAnimationFrame(function(){
+        try{
+          if(typeof renderGlobeScene === 'function'){
+            renderGlobeScene();
+          }else{
+            emergencyDraw();
+          }
+        }catch(err){
+          console.error('ALBAZ 3D render retry failed:',err);
+          emergencyDraw();
+        }
+      });
+    }catch(err){
+      console.error('ALBAZ GitHub 3D hard boot failed:',err);
+      emergencyDraw();
+    }
+  }
+
+  function scheduleBoots(){
+    bootTimers.forEach(clearTimeout);
+    bootTimers = [
+      setTimeout(hardBoot3D,0),
+      setTimeout(hardBoot3D,120),
+      setTimeout(hardBoot3D,600),
+      setTimeout(hardBoot3D,1600)
+    ];
+  }
+
+  function start(){
+    emergencyDraw();
+    scheduleBoots();
+
+    try{
+      if(typeof baseImg !== 'undefined' && baseImg){
+        if(baseImg.complete && baseImg.naturalWidth){
+          setTimeout(hardBoot3D,40);
+        }else{
+          baseImg.addEventListener('load',function(){
+            setTimeout(hardBoot3D,20);
+            setTimeout(hardBoot3D,280);
+          },{once:true});
+          baseImg.addEventListener('error',function(){
+            emergencyDraw();
+          },{once:true});
+        }
+      }
+    }catch(_e){}
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
+
+  window.addEventListener('load',function(){
+    setTimeout(hardBoot3D,40);
+    setTimeout(hardBoot3D,500);
+  },{once:true});
+
+  window.addEventListener('pageshow',function(){
+    setTimeout(hardBoot3D,50);
+  });
+
+  window.addEventListener('resize',function(){
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(function(){
+      try{
+        if(typeof CURRENT_VIEW_MODE === 'undefined' || CURRENT_VIEW_MODE === '3d'){
+          hardBoot3D();
+        }
+      }catch(_e){
+        hardBoot3D();
+      }
+    },120);
+  });
+})();
+</script>
+
 </body>
 </html>
