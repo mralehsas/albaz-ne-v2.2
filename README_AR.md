@@ -1,6 +1,6 @@
-# ALBAZ-NE V2.2 — GitHub Pages
+# أطلس الباز الذكي لرؤية الهلال — ALBAZ Smart Crescent Visibility Atlas
 
-حزمة موقع معيار الباز لرؤية الهلال، جاهزة للرفع إلى GitHub Pages.
+حزمة الموقع الرسمي لـ **أطلس الباز الذكي لرؤية الهلال** (ALBAZ Smart Crescent Visibility Atlas)، مدعوم بمعيار ALBAZ-NE V2.2، وجاهزة للنشر على GitHub Pages.
 
 ## الملفات
 - `index.html` — الصفحة الرئيسية الكاملة.
