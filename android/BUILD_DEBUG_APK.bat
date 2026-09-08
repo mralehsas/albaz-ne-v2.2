@@ -16,7 +16,7 @@ if errorlevel 1 (
   exit /b 1
 )
 if not exist Dist mkdir Dist
-copy /Y "app\build\outputs\apk\debug\app-debug.apk" "Dist\ALBAZ_Smart_Crescent_Atlas_v2.2.1_DEBUG.apk" >nul
+copy /Y "app\build\outputs\apk\debug\app-debug.apk" "Dist\ALBAZ_Smart_Crescent_Atlas_v2.2.2_DEBUG.apk" >nul
 echo.
-echo [OK] Dist\ALBAZ_Smart_Crescent_Atlas_v2.2.1_DEBUG.apk
+echo [OK] Dist\ALBAZ_Smart_Crescent_Atlas_v2.2.2_DEBUG.apk
 pause
