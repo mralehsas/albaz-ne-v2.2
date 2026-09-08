@@ -1,4 +1,4 @@
-const CACHE_NAME = 'albaz-official-flagship-v6-2026-09-08-guide-safe';
+const CACHE_NAME = 'albaz-official-flagship-v7-2026-09-08-bottom-nav';
 const APP_SHELL = [
   './',
   './index.html',

@@ -2186,7 +2186,7 @@ html,body{padding-bottom:130px!important;}
 <meta name="albaz-build" content="V2.2-GITHUB-3D-HARDFIX-2026-09-08">
 
 
-<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V5-FLAGSHIP-MENU">
+<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V6-BOTTOM-NAV-FIX">
 
 
 
@@ -2333,9 +2333,10 @@ body:not(.albaz-drawer-open) .albazMobileBackdrop{display:none!important}
   display:grid!important;grid-template-columns:repeat(4,1fr)!important;position:fixed!important;z-index:800!important;
   left:50%!important;transform:translateX(-50%)!important;bottom:10px!important;width:calc(100% - 28px)!important;max-width:650px!important;
   padding:8px!important;border-radius:27px!important;border:1px solid rgba(232,189,89,.28)!important;background:rgba(5,17,31,.97)!important;
-  box-shadow:0 18px 48px rgba(0,0,0,.48)!important;backdrop-filter:blur(14px)!important
+  box-shadow:0 18px 48px rgba(0,0,0,.48)!important;backdrop-filter:blur(14px)!important;
+  pointer-events:auto!important;touch-action:manipulation!important
 }
-.albazMobileBottomNav button{min-height:64px!important;padding:7px 4px!important;border-radius:20px!important;border:0!important;background:transparent!important;color:#c4d2e2!important;font-size:11px!important;font-weight:900!important;box-shadow:none!important}
+.albazMobileBottomNav button{min-height:64px!important;padding:7px 4px!important;border-radius:20px!important;border:0!important;background:transparent!important;color:#c4d2e2!important;font-size:11px!important;font-weight:900!important;box-shadow:none!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important;cursor:pointer!important}
 .albazMobileBottomNav button .ico{display:block!important;margin-bottom:4px!important;font-size:21px!important}
 .albazMobileBottomNav button.active{color:#ffe09a!important;border:1px solid rgba(232,189,89,.30)!important;background:rgba(232,189,89,.08)!important}
 
@@ -6249,23 +6250,58 @@ function openProfessionalReportNativeSafe(){
       <button id="albazNavReport" type="button"><span class="ico">📄</span>التقرير</button>`;
     document.body.appendChild(nav);
 
-    byId('albazNavHome').addEventListener('click',function(){
-      window.scrollTo({top:0,behavior:'smooth'});
-      setBottomActive('home');
+    byId('albazNavHome').addEventListener('click',function(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      document.body.classList.remove('albaz-menu-open','albaz-drawer-open');
+      if(typeof window.albazOfficialShowHome==='function'){
+        window.albazOfficialShowHome();
+      }else{
+        document.body.classList.add('albaz-home-mode');
+        document.body.classList.remove('albaz-app-mode');
+        window.scrollTo({top:0,behavior:'smooth'});
+        setBottomActive('home');
+      }
     });
-    byId('albazNav2D').addEventListener('click',function(){
-      byId('view2DBtn')?.click();
-      setBottomActive('2d');
-      byId('mapCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+    byId('albazNav2D').addEventListener('click',function(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      document.body.classList.remove('albaz-menu-open','albaz-drawer-open');
+      if(typeof window.albazOfficialShow2D==='function'){
+        window.albazOfficialShow2D();
+      }else{
+        byId('view2DBtn')?.click();
+        document.body.classList.remove('albaz-home-mode');
+        document.body.classList.add('albaz-app-mode');
+        setBottomActive('2d');
+        byId('mapCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+      }
     });
-    byId('albazNav3D').addEventListener('click',function(){
-      byId('view3DBtn')?.click();
-      setBottomActive('3d');
-      byId('mapCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+    byId('albazNav3D').addEventListener('click',function(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      document.body.classList.remove('albaz-menu-open','albaz-drawer-open');
+      if(typeof window.albazOfficialShow3D==='function'){
+        window.albazOfficialShow3D();
+      }else{
+        byId('view3DBtn')?.click();
+        document.body.classList.remove('albaz-home-mode');
+        document.body.classList.add('albaz-app-mode');
+        setBottomActive('3d');
+        byId('mapCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+      }
     });
-    byId('albazNavReport').addEventListener('click',function(){
-      byId('professionalReportBtn')?.click();
+    byId('albazNavReport').addEventListener('click',function(e){
+      if(e){ e.preventDefault(); e.stopPropagation(); }
+      document.body.classList.remove('albaz-menu-open');
+      if(typeof window.albazOfficialShow2D==='function'){
+        window.albazOfficialShow2D();
+      }else{
+        document.body.classList.remove('albaz-home-mode');
+        document.body.classList.add('albaz-app-mode');
+      }
       setBottomActive('report');
+      setTimeout(function(){
+        document.body.classList.add('albaz-drawer-open');
+        byId('exportCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+      },80);
     });
   }
 
