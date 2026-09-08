@@ -1,12 +1,38 @@
 {
-  "name": "ALBAZ-NE V2.2 — معيار الباز لرؤية الهلال",
-  "short_name": "ALBAZ-NE V2.2",
-  "description": "خرائط رؤية الهلال حسب معيار الباز ALBAZ-NE V2.2",
+  "id": "./",
+  "name": "ALBAZ Smart Atlas — معيار الباز الرسمي لرؤية الهلال",
+  "short_name": "ALBAZ Atlas",
+  "description": "التطبيق الرسمي لمعيار ALBAZ-NE V2.2 لرؤية الهلال: خرائط 2D و3D، تحليل المواقع، التقارير العلمية، والتدرج العالمي للرؤية.",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "./",
+  "start_url": "./?view=home",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#07111f",
-  "theme_color": "#07111f"
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#06111f",
+  "theme_color": "#081a2e",
+  "categories": ["education", "science", "utilities"],
+  "shortcuts": [
+    {
+      "name": "الخريطة الذكية 2D",
+      "short_name": "2D",
+      "url": "./?view=2d"
+    },
+    {
+      "name": "الكرة الذكية 3D",
+      "short_name": "3D",
+      "url": "./?view=3d"
+    },
+    {
+      "name": "التقرير الاحترافي",
+      "short_name": "Report",
+      "url": "./?view=report"
+    },
+    {
+      "name": "حول التطبيق",
+      "short_name": "About",
+      "url": "./?view=about"
+    }
+  ]
 }
