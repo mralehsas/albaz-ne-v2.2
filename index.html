@@ -2186,7 +2186,7 @@ html,body{padding-bottom:130px!important;}
 <meta name="albaz-build" content="V2.2-GITHUB-3D-HARDFIX-2026-09-08">
 
 
-<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V3-CLEAN-SINGLE-UI-LAYER">
+<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V4-FORENSIC-CLEAN">
 
 
 
@@ -5952,146 +5952,7 @@ function openProfessionalReportNativeSafe(){
       ctx.stroke();
 
       ctx.fillStyle='#ffe6a5';
-      ctx.font='bold 18px Tahoma,Arial,sans-serif
-<div id="albazTechSplash" aria-label="ALBAZ launch experience">
-  <div class="albazTechGrid"></div>
-  <div class="albazTechStars"></div>
-  <div class="albazTechCore">
-    <div class="albazOrbit albazOrbit1"><span></span></div>
-    <div class="albazOrbit albazOrbit2"><span></span></div>
-    <div class="albazOrbit albazOrbit3"><span></span></div>
-    <div class="albazTechMark">
-      <div class="albazTechCrescent">☾</div>
-      <div class="albazTechName">ALBAZ</div>
-    </div>
-  </div>
-  <div class="albazTechTitle">ALBAZ SMART ATLAS</div>
-  <div class="albazTechSubtitle">ASTRONOMY • PHYSICS • PROGRAMMING</div>
-  <div class="albazTechDomains">
-    <span>✦ علم الفلك</span><span>⚛ الفيزياء</span><span>&lt;/&gt; البرمجة</span>
-  </div>
-  <div class="albazTechLine"><i></i></div>
-  <div class="albazTechFoot">من المعادلة إلى السماء</div>
-</div>
-<style id="albaz-tech-splash-style">
-#albazTechSplash{
-  position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;overflow:hidden;
-  background:
-    radial-gradient(circle at 50% 42%,rgba(34,104,158,.24),transparent 28%),
-    radial-gradient(circle at 50% 45%,rgba(226,190,105,.10),transparent 42%),
-    linear-gradient(180deg,#020710 0%,#04101d 62%,#02070e 100%);
-  color:#eef7ff;font-family:"Janna LT Bold","Janna LT","Tahoma","Arial",sans-serif;
-  transition:opacity .65s ease,visibility .65s ease
-}
-#albazTechSplash.albazTechHide{opacity:0;visibility:hidden;pointer-events:none}
-.albazTechGrid{
-  position:absolute;inset:-30%;opacity:.16;transform:perspective(600px) rotateX(65deg) translateY(38%);
-  background-image:
-    linear-gradient(rgba(75,160,218,.38) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(75,160,218,.38) 1px,transparent 1px);
-  background-size:38px 38px;
-  animation:albazGridMove 4s linear infinite
-}
-.albazTechStars{
-  position:absolute;inset:0;opacity:.62;
-  background:
-    radial-gradient(circle at 12% 18%,#fff 0 1px,transparent 1.7px),
-    radial-gradient(circle at 24% 64%,#8fd8ff 0 1px,transparent 1.7px),
-    radial-gradient(circle at 76% 23%,#ffe7a2 0 1px,transparent 1.7px),
-    radial-gradient(circle at 88% 70%,#fff 0 1px,transparent 1.6px),
-    radial-gradient(circle at 61% 11%,#fff 0 1px,transparent 1.5px),
-    radial-gradient(circle at 39% 81%,#8fd8ff 0 1px,transparent 1.6px)
-}
-.albazTechCore{
-  width:230px;height:230px;position:relative;display:grid;place-items:center;
-  margin-bottom:20px;filter:drop-shadow(0 0 24px rgba(73,177,235,.18))
-}
-.albazOrbit{
-  position:absolute;inset:16px;border:1px solid rgba(97,197,255,.42);border-radius:50%;
-  animation:albazSpin 5s linear infinite
-}
-.albazOrbit2{inset:37px;border-color:rgba(226,190,105,.42);animation-duration:7s;animation-direction:reverse}
-.albazOrbit3{inset:57px;border-color:rgba(86,235,184,.34);animation-duration:4s}
-.albazOrbit span{
-  position:absolute;top:-4px;left:50%;width:8px;height:8px;border-radius:50%;
-  background:#72d4ff;box-shadow:0 0 14px #72d4ff
-}
-.albazOrbit2 span{background:#ffe29a;box-shadow:0 0 14px #ffe29a}
-.albazOrbit3 span{background:#69e6ba;box-shadow:0 0 14px #69e6ba}
-.albazTechMark{
-  width:112px;height:112px;border-radius:32px;display:grid;place-items:center;
-  background:linear-gradient(145deg,rgba(15,52,82,.98),rgba(4,19,34,.98));
-  border:1px solid rgba(226,190,105,.62);
-  box-shadow:0 0 0 7px rgba(226,190,105,.04),0 18px 50px rgba(0,0,0,.45);
-  position:relative;overflow:hidden
-}
-.albazTechMark::after{
-  content:"</>";position:absolute;bottom:8px;left:0;right:0;text-align:center;
-  color:rgba(100,219,255,.62);font:700 12px Consolas,monospace
-}
-.albazTechCrescent{font-size:48px;color:#ffe09a;line-height:1;transform:translateY(-4px)}
-.albazTechName{
-  position:absolute;top:76px;left:0;right:0;text-align:center;
-  color:#fff3c4;font:900 13px "Janna LT Bold","Tahoma",sans-serif;letter-spacing:2px
-}
-.albazTechTitle{
-  color:#ffe2a0;font-size:28px;font-weight:900;letter-spacing:1.1px;
-  text-shadow:0 0 22px rgba(226,190,105,.18);animation:albazReveal .7s ease both .25s
-}
-.albazTechSubtitle{
-  margin-top:5px;color:#8ed9ff;font:700 11px Consolas,monospace;
-  letter-spacing:2.5px;animation:albazReveal .7s ease both .45s
-}
-.albazTechDomains{
-  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px;
-  animation:albazReveal .7s ease both .65s
-}
-.albazTechDomains span{
-  padding:7px 11px;border-radius:999px;border:1px solid rgba(77,130,174,.58);
-  background:rgba(6,28,48,.72);color:#dcecff;font-size:11px;font-weight:900
-}
-.albazTechLine{
-  width:min(330px,72vw);height:3px;margin-top:20px;border-radius:999px;
-  background:#061a2d;overflow:hidden;border:1px solid rgba(55,104,143,.44)
-}
-.albazTechLine i{
-  display:block;height:100%;width:42%;border-radius:999px;
-  background:linear-gradient(90deg,#e2be69,#58d5ff,#66e5b7);
-  animation:albazScan 1.45s ease-in-out infinite
-}
-.albazTechFoot{margin-top:9px;color:#b9c8d8;font-size:11px;font-weight:800}
-@keyframes albazSpin{to{transform:rotate(360deg)}}
-@keyframes albazGridMove{to{background-position:0 76px,76px 0}}
-@keyframes albazScan{0%{transform:translateX(-120%)}100%{transform:translateX(330%)}}
-@keyframes albazReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@media(max-width:520px){
-  .albazTechCore{width:190px;height:190px}
-  .albazTechMark{width:96px;height:96px;border-radius:28px}
-  .albazTechCrescent{font-size:42px}
-  .albazTechName{top:64px;font-size:11px}
-  .albazTechMark::after{font-size:10px;bottom:7px}
-  .albazTechTitle{font-size:23px}
-  .albazTechSubtitle{font-size:9px;letter-spacing:1.7px}
-}
-</style>
-<script id="albaz-tech-splash-script">
-(function(){
-  function closeSplash(){
-    var s=document.getElementById("albazTechSplash");
-    if(!s)return;
-    s.classList.add("albazTechHide");
-    setTimeout(function(){if(s)s.style.display="none"},720);
-  }
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",function(){setTimeout(closeSplash,2450)},{once:true});
-  }else{
-    setTimeout(closeSplash,2450);
-  }
-  window.addEventListener("load",function(){setTimeout(closeSplash,2700)},{once:true});
-})();
-</script>
-';
+      ctx.font='bold 18px Tahoma,Arial,sans-serif';
       ctx.textAlign='center';
       ctx.fillText('ALBAZ-NE V2.2 3D Globe',cx,Math.max(28,cy-radius-22));
     }catch(err){
