@@ -1,0 +1,12 @@
+{
+  "name": "ALBAZ-NE V2.2 — معيار الباز لرؤية الهلال",
+  "short_name": "ALBAZ-NE V2.2",
+  "description": "خرائط رؤية الهلال حسب معيار الباز ALBAZ-NE V2.2",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#07111f"
+}
