@@ -4,7 +4,7 @@
 
 ## الملفات
 - `index.html` — الصفحة الرئيسية الكاملة.
-- `ALBAZ_NE_V2_2_FULL_CRITERION_AR.pdf` — الدليل العلمي الكامل.
+- `ALBAZ_NE_V2_2_USER_GUIDE_AR.html` — دليل استخدام عام مبسط، بلا تفاصيل النموذج الرياضي أو الخوارزميات.
 - `site.webmanifest` — إعدادات PWA.
 - `sw.js` — تخزين Offline بعد الزيارة الأولى عبر HTTPS.
 - `.nojekyll` — يمنع معالجة Jekyll غير الضرورية.

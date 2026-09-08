@@ -5789,7 +5789,7 @@ if(document.readyState === 'loading'){
 
     <div class="hilalAboutActions">
       <button class="hilalAboutClose" type="button" onclick="closeHilalAbout()">إغلاق</button>
-      <button class="hilalAboutGuide" type="button" onclick="window.open('ALBAZ_NE_V2_2_FULL_CRITERION_AR.pdf','_blank')">الدليل العلمي PDF</button>
+      <button class="hilalAboutGuide" type="button" onclick="window.open('ALBAZ_NE_V2_2_USER_GUIDE_AR.html','_blank')">دليل الاستخدام المبسط</button>
     </div>
   </div>
 </div>
@@ -6460,7 +6460,7 @@ function openProfessionalReportNativeSafe(){
   <div class="albazMenuGroupTitle">العلم والتقارير</div>
   <button class="albazMenuItem" type="button" data-menu-action="report"><span class="micon">📄</span>مركز التقارير</button>
   <button class="albazMenuItem" type="button" data-menu-action="about"><span class="micon">ℹ</span>حول البرنامج</button>
-  <button class="albazMenuItem" type="button" data-menu-action="guide"><span class="micon">📘</span>الدليل العلمي PDF</button>
+  <button class="albazMenuItem" type="button" data-menu-action="guide"><span class="micon">📘</span>دليل الاستخدام المبسط</button>
 
   <div class="albazMenuGroupTitle">المحرك العلمي</div>
   <button class="albazMenuItem gold" type="button" data-menu-action="advanced"><span class="micon">⚙</span>الإعدادات العلمية المتقدمة</button>
@@ -6516,7 +6516,7 @@ function openProfessionalReportNativeSafe(){
         if(a==='world') return goWorld();
         if(a==='report') return goReport();
         if(a==='about') return setTimeout(function(){window.openHilalAbout?.()},80);
-        if(a==='guide') return window.open('ALBAZ_NE_V2_2_FULL_CRITERION_AR.pdf','_blank');
+        if(a==='guide') return window.open('ALBAZ_NE_V2_2_USER_GUIDE_AR.html','_blank');
         if(a==='advanced'){
           document.body.classList.add('albaz-drawer-open');
           setTimeout(function(){id('calcCard')?.scrollIntoView({block:'start'})},60);

@@ -1,9 +1,9 @@
-const CACHE_NAME = 'albaz-official-flagship-v5-2026-09-08';
+const CACHE_NAME = 'albaz-official-flagship-v6-2026-09-08-guide-safe';
 const APP_SHELL = [
   './',
   './index.html',
   './site.webmanifest',
-  './ALBAZ_NE_V2_2_FULL_CRITERION_AR.pdf'
+  './ALBAZ_NE_V2_2_USER_GUIDE_AR.html'
 ];
 
 self.addEventListener('install', event => {
