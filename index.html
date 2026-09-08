@@ -2186,7 +2186,7 @@ html,body{padding-bottom:130px!important;}
 <meta name="albaz-build" content="V2.2-GITHUB-3D-HARDFIX-2026-09-08">
 
 
-<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V4-FORENSIC-CLEAN">
+<meta name="albaz-ui-build" content="ALBAZ-OFFICIAL-APP-V5-FLAGSHIP-MENU">
 
 
 
@@ -2384,6 +2384,55 @@ body:not(.albaz-drawer-open) .albazMobileBackdrop{display:none!important}
   .albazHomeTile{min-height:145px!important}
   .albazMobileFields{grid-template-columns:1fr!important}
   .albazMobileActions{grid-template-columns:repeat(3,1fr)!important}
+}
+</style>
+<style id="albaz-official-menu-v1-style">
+#albazOfficialMenu{
+  position:fixed;top:0;right:0;bottom:0;z-index:920;width:min(88vw,370px);
+  padding:16px 12px 110px;overflow-y:auto;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(232,189,89,.08),transparent 26%),
+    linear-gradient(180deg,#071a2e,#05111e);
+  border-left:1px solid #31597e;box-shadow:-24px 0 64px rgba(0,0,0,.54);
+  transform:translateX(104%);transition:transform .24s ease
+}
+body.albaz-menu-open #albazOfficialMenu{transform:translateX(0)}
+#albazOfficialMenuBackdrop{
+  display:none;position:fixed;inset:0;z-index:910;background:rgba(0,0,0,.62);backdrop-filter:blur(3px)
+}
+body.albaz-menu-open #albazOfficialMenuBackdrop{display:block}
+.albazMenuHead{
+  display:flex;align-items:center;gap:12px;padding:12px 12px 15px;margin-bottom:10px;
+  border-bottom:1px solid rgba(232,189,89,.20)
+}
+.albazMenuMiniLogo{
+  width:48px;height:48px;flex:0 0 48px;border-radius:16px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#f0cf78,#c88f31);color:#071321;font-size:27px;
+  box-shadow:0 10px 22px rgba(0,0,0,.22)
+}
+.albazMenuHead b{display:block;color:#ffe09a;font-size:16px}
+.albazMenuHead span{display:block;margin-top:3px;color:#aebed0;font-size:9px;direction:ltr;text-align:right}
+.albazMenuGroupTitle{
+  margin:14px 7px 7px;color:#7f96ae;font-size:10px;font-weight:900
+}
+.albazMenuItem{
+  width:100%;min-height:52px;margin:6px 0;padding:8px 12px;
+  display:flex;align-items:center;gap:11px;text-align:right;
+  border-radius:16px;border:1px solid #294c6d;background:#082038;color:#eef6ff;
+  box-shadow:none;font-size:12px;font-weight:900;cursor:pointer
+}
+.albazMenuItem:hover{border-color:#4f7ba1;background:#0a2744}
+.albazMenuItem .micon{
+  width:33px;height:33px;flex:0 0 33px;border-radius:11px;display:grid;place-items:center;
+  background:#0d2c4b;border:1px solid #31597e;font-size:17px
+}
+.albazMenuItem.gold{
+  background:linear-gradient(180deg,#f0cf78,#d29a39);color:#171109;border-color:#e8bd59
+}
+.albazMenuItem.gold .micon{background:rgba(255,255,255,.18);border-color:rgba(81,54,7,.18)}
+.albazMenuVersion{
+  margin:16px 7px 0;padding:10px;border-radius:14px;border:1px solid rgba(232,189,89,.18);
+  background:rgba(7,24,41,.72);color:#95a9be;font:700 9px Consolas,monospace;text-align:center;direction:ltr
 }
 </style></head>
 <body>
@@ -6236,9 +6285,8 @@ function openProfessionalReportNativeSafe(){
   }
 
   function bindDrawer(){
-    byId('albazMenuBtn')?.addEventListener('click',function(){
-      document.body.classList.toggle('albaz-drawer-open');
-    });
+    /* Official app owns the hamburger menu.
+       Scientific panel remains available from "الإعدادات العلمية المتقدمة". */
     document.querySelectorAll('.panelStack button,.panelStack a').forEach(function(el){
       el.addEventListener('click',function(){
         if(window.innerWidth<=1800) document.body.classList.remove('albaz-drawer-open');
@@ -6394,6 +6442,89 @@ function openProfessionalReportNativeSafe(){
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();
+})();
+</script>
+<aside id="albazOfficialMenu" aria-label="القائمة الرئيسية لتطبيق الباز">
+  <div class="albazMenuHead">
+    <div class="albazMenuMiniLogo">☾</div>
+    <div><b>ALBAZ SMART ATLAS</b><span>OFFICIAL • ALBAZ-NE V2.2</span></div>
+  </div>
+
+  <div class="albazMenuGroupTitle">التنقل الرئيسي</div>
+  <button class="albazMenuItem" type="button" data-menu-action="home"><span class="micon">⌂</span>الرئيسية</button>
+  <button class="albazMenuItem" type="button" data-menu-action="2d"><span class="micon">🗺️</span>الخريطة الذكية 2D</button>
+  <button class="albazMenuItem" type="button" data-menu-action="3d"><span class="micon">🌍</span>الكرة الذكية 3D</button>
+  <button class="albazMenuItem" type="button" data-menu-action="point"><span class="micon">🎯</span>تحليل موقع</button>
+  <button class="albazMenuItem" type="button" data-menu-action="world"><span class="micon">🌐</span>دول العالم والعواصم</button>
+
+  <div class="albazMenuGroupTitle">العلم والتقارير</div>
+  <button class="albazMenuItem" type="button" data-menu-action="report"><span class="micon">📄</span>مركز التقارير</button>
+  <button class="albazMenuItem" type="button" data-menu-action="about"><span class="micon">ℹ</span>حول البرنامج</button>
+  <button class="albazMenuItem" type="button" data-menu-action="guide"><span class="micon">📘</span>الدليل العلمي PDF</button>
+
+  <div class="albazMenuGroupTitle">المحرك العلمي</div>
+  <button class="albazMenuItem gold" type="button" data-menu-action="advanced"><span class="micon">⚙</span>الإعدادات العلمية المتقدمة</button>
+
+  <div class="albazMenuVersion">ALBAZ OFFICIAL APP • SCIENTIFIC ENGINE: ALBAZ-NE V2.2</div>
+</aside>
+<div id="albazOfficialMenuBackdrop"></div>
+<script id="albaz-official-menu-v1-script">
+(function(){
+  function id(x){return document.getElementById(x)}
+  function closeMenu(){document.body.classList.remove('albaz-menu-open')}
+  function openMenu(){
+    document.body.classList.remove('albaz-drawer-open');
+    document.body.classList.add('albaz-menu-open');
+  }
+  window.albazOpenOfficialMenu=openMenu;
+  window.albazCloseOfficialMenu=closeMenu;
+
+  function goPoint(){
+    window.albazOfficialShow2D?.();
+    setTimeout(function(){
+      document.body.classList.add('albaz-drawer-open');
+      id('pointCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },180);
+  }
+  function goWorld(){
+    window.albazOfficialShow2D?.();
+    setTimeout(function(){
+      document.body.classList.add('albaz-drawer-open');
+      id('capitalSelect')?.scrollIntoView({behavior:'smooth',block:'center'});
+    },180);
+  }
+  function goReport(){
+    window.albazOfficialShow2D?.();
+    setTimeout(function(){
+      document.body.classList.add('albaz-drawer-open');
+      id('exportCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },180);
+  }
+
+  function bind(){
+    var menu=id('albazMenuBtn');
+    if(menu) menu.onclick=function(e){e.preventDefault();e.stopPropagation();openMenu()};
+    id('albazOfficialMenuBackdrop')?.addEventListener('click',closeMenu);
+    document.querySelectorAll('[data-menu-action]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        const a=btn.getAttribute('data-menu-action');
+        closeMenu();
+        if(a==='home') return window.albazOfficialShowHome?.();
+        if(a==='2d') return window.albazOfficialShow2D?.();
+        if(a==='3d') return window.albazOfficialShow3D?.();
+        if(a==='point') return goPoint();
+        if(a==='world') return goWorld();
+        if(a==='report') return goReport();
+        if(a==='about') return setTimeout(function(){window.openHilalAbout?.()},80);
+        if(a==='guide') return window.open('ALBAZ_NE_V2_2_FULL_CRITERION_AR.pdf','_blank');
+        if(a==='advanced'){
+          document.body.classList.add('albaz-drawer-open');
+          setTimeout(function(){id('calcCard')?.scrollIntoView({block:'start'})},60);
+        }
+      });
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 })();
 </script></body>
 </html>
