@@ -1,4 +1,4 @@
-const CACHE_NAME = 'albaz-official-app-v1-2026-09-08';
+const CACHE_NAME = 'albaz-official-flagship-v5-2026-09-08';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,9 +7,7 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
   self.skipWaiting();
 });
 
@@ -24,15 +22,16 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if(event.request.method !== 'GET') return;
-  const req = event.request;
-  const isDocument = req.mode === 'navigate' || req.destination === 'document';
+
+  const req=event.request;
+  const isDocument=req.mode==='navigate'||req.destination==='document';
 
   if(isDocument){
     event.respondWith((async()=>{
       try{
-        const fresh = await fetch(req,{cache:'no-store'});
-        const cache = await caches.open(CACHE_NAME);
-        cache.put('./index.html', fresh.clone());
+        const fresh=await fetch(req,{cache:'no-store'});
+        const cache=await caches.open(CACHE_NAME);
+        cache.put('./index.html',fresh.clone());
         return fresh;
       }catch(err){
         return (await caches.match('./index.html')) || (await caches.match('./'));
@@ -42,15 +41,11 @@ self.addEventListener('fetch', event => {
   }
 
   event.respondWith((async()=>{
-    const cached = await caches.match(req);
+    const cached=await caches.match(req);
     if(cached) return cached;
-    try{
-      const fresh = await fetch(req);
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(req, fresh.clone());
-      return fresh;
-    }catch(err){
-      throw err;
-    }
+    const fresh=await fetch(req);
+    const cache=await caches.open(CACHE_NAME);
+    cache.put(req,fresh.clone());
+    return fresh;
   })());
 });
