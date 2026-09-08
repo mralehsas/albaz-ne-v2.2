@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="ALBAZ-NE V2.2 crescent visibility criterion — interactive 2D/3D HTML map">
-<title>معيار الباز لرؤية الهلال — ALBAZ-NE V2.2</title>
+<meta name="description" content="ALBAZ Smart Crescent Visibility Atlas — مدعوم بمعيار ALBAZ-NE V2.2 — interactive 2D/3D crescent visibility atlas">
+<title>أطلس الباز الذكي لرؤية الهلال — ALBAZ Smart Crescent Visibility Atlas</title>
 <style>
   
 
@@ -2437,10 +2437,10 @@ body.albaz-menu-open #albazOfficialMenuBackdrop{display:block}
 }
 </style></head>
 <body>
-<div id="hilalSplashScreen" aria-label="شاشة افتتاح تطبيق معيار الباز لرؤية الهلال — ALBAZ-NE V2.2">
+<div id="hilalSplashScreen" aria-label="شاشة افتتاح أطلس الباز الذكي لرؤية الهلال">
   <div class="splashMoon">🌙</div>
-  <h1>معيار الباز لرؤية الهلال — ALBAZ-NE V2.2</h1>
-  <p>جاري تهيئة محرك معيار الباز ALBAZ-NE V2.2 والحسابات الفلكية...</p>
+  <h1>أطلس الباز الذكي لرؤية الهلال</h1>
+  <p>ALBAZ Smart Crescent Visibility Atlas<br>مدعوم بمعيار ALBAZ-NE V2.2<br>جاري تهيئة الحسابات الفلكية...</p>
   <div class="splashBar"><div></div></div>
 </div>
 <div class="versionCorner vcTopRight">V2.2</div>
@@ -2453,7 +2453,7 @@ body.albaz-menu-open #albazOfficialMenuBackdrop{display:block}
     <div class="brand">
       <div class="logoMark" aria-hidden="true"></div>
       <div>
-        <h1>خرائط رؤية الهلال حسب معيار الباز ALBAZ-NE V2.2</h1>
+        <h1>أطلس الباز الذكي لرؤية الهلال</h1>
         <div class="sub">الصيغة المجمدة S01: ARCV + W — تحقق خارجي رجعي ICOP 2026: AUC 0.9977 — وضع الويب: أفق فلكي قياسي</div>
       </div>
     </div>
@@ -2674,14 +2674,11 @@ body.albaz-menu-open #albazOfficialMenuBackdrop{display:block}
         </details>
 
         <details class="controlGroup">
-          <summary>المعادلة العلمية المستخدمة</summary>
+          <summary>المحرك العلمي</summary>
           <div class="controlInner">
             <div class="note">
-              <b>نواة معيار الباز ALBAZ-NE V2.2:</b>
-              <div class="formula">η = −9.26239793626902 + 0.746228987701533 × ARCV + 4.27427263338279 × W</div>
-              <div class="formula">P = 1 / (1 + e<sup>−η</sup>) ، والحد المجمد P ≥ 0.376742538335999</div>
-              <div class="formula">V<sub>Albaz</sub> = ARCV + 5.727829800002835 × W − 11.737684300761264</div>
-              <div>القرار الرسمي: V<sub>Albaz</sub> ≥ 0 ⇐⇒ P ≥ 0.376742538335999. الألوان A–F تدرج بصري للعرض فقط وليست حدودًا علمية إضافية.</div>
+              <b>ALBAZ-NE V2.2</b><br>
+              المحرك العلمي مدمج داخل الأطلس. لا تعرض النسخة العامة المعادلة أو معاملات النموذج أو تفاصيل الخوارزمية.
             </div>
           </div>
         </details>
@@ -4967,7 +4964,7 @@ function makeReportHTML(includeScript=false){
   </div>
 
   <div class="footer">
-    خرائط رؤية الهلال حسب معيار الباز ALBAZ-NE V2.2.
+    أطلس الباز الذكي لرؤية الهلال — مدعوم بمعيار ALBAZ-NE V2.2.
   </div>
 
   ${includeScript ? '<script>window.onload=function(){setTimeout(function(){window.print()},400)}<\/script>' : ''}
@@ -5063,12 +5060,12 @@ function getCurrentCaseTitle(){
     const siteName = document.getElementById('siteName') ? document.getElementById('siteName').value.trim() : '';
     const dateValue = (typeof formatCaseDateArabic === 'function') ? formatCaseDateArabic() : (document.getElementById('dateInput') ? document.getElementById('dateInput').value : '');
     const tz = document.getElementById('siteTZ') ? document.getElementById('siteTZ').value.trim() : '';
-    let title = 'تقرير معيار الباز لرؤية الهلال — ALBAZ-NE V2.2';
+    let title = 'تقرير أطلس الباز الذكي لرؤية الهلال — ALBAZ-NE V2.2';
     if(siteName) title += ' — ' + siteName;
     if(tz) title += ' — ' + tz;
     if(dateValue) title += ' — ' + dateValue;
     return title;
-  }catch(e){ return 'تقرير معيار الباز لرؤية الهلال — ALBAZ-NE V2.2'; }
+  }catch(e){ return 'تقرير أطلس الباز الذكي لرؤية الهلال — ALBAZ-NE V2.2'; }
 }
 
 function getCurrentCaseSubtitle(){
@@ -5480,7 +5477,7 @@ body{
       <div style="font-size:11px;margin-top:6px;color:#e8f2ff">${escapeHTML(site.name)} — ${escapeHTML(site.desc)}</div>
     </div>
     <div class="credit">
-      <b>إعداد التقرير:</b> صفحة معيار الباز ALBAZ-NE V2.2<br>
+      <b>إعداد التقرير:</b> أطلس الباز الذكي لرؤية الهلال<br>
       <b>مصدر الحساب:</b> HTML Engine + ALBAZ-NE V2.2<br>
       <b>الإصدار:</b> ALBAZ-NE V2.2 HTML
     </div>
@@ -5746,19 +5743,18 @@ if(document.readyState === 'loading'){
       <div class="aboutMoon">☾</div>
       <div class="aboutTitleWrap">
         <h2>حول البرنامج</h2>
-        <div class="aboutVersion">ALBAZ SMART ATLAS • ALBAZ-NE V2.2</div>
+        <div class="aboutVersion">ALBAZ Smart Crescent Visibility Atlas • ALBAZ-NE V2.2</div>
       </div>
     </div>
 
     <div class="aboutSection">
-      <strong>معيار الباز لرؤية الهلال — ALBAZ-NE V2.2</strong><br>
-      أطلس فلكي ذكي لدراسة إمكانية رؤية الهلال عالميًا، مبني على معيار الباز المجمد باستخدام فرق الارتفاع الزاوي ARCV وعرض الهلال W عند الغروب المحلي.
+      <strong>أطلس الباز الذكي لرؤية الهلال</strong><br>
+      ALBAZ Smart Crescent Visibility Atlas<br>مدعوم بمعيار ALBAZ-NE V2.2. أطلس فلكي ذكي لدراسة إمكانية رؤية الهلال عالميًا وعرض النتائج على خرائط ثنائية وثلاثية الأبعاد.
     </div>
 
     <div class="aboutSection">
-      <strong>المعادلة الرسمية</strong>
-      <div class="aboutEquation">V_Albaz = ARCV + 5.727829800002835 × W − 11.737684300761264</div>
-      القرار العلمي: يكون الهلال ضمن منطقة الرؤية عندما تكون <b>V_Albaz ≥ 0</b>، وهي مكافئة لحد الاحتمال المجمد <b>P ≥ 0.376742538335999</b>.
+      <strong>المحرك العلمي</strong><br>
+      يعتمد الأطلس على معيار ALBAZ-NE V2.2. تفاصيل النموذج الرياضي ومعاملاته وخوارزميات المعالجة محفوظة ضمن الوثائق البحثية الخاصة بالمؤلف ولا تُعرض في النسخة العامة.
     </div>
 
     <div class="aboutSection">
@@ -6147,8 +6143,8 @@ function openProfessionalReportNativeSafe(){
       <div class="albazHeroMain">
         <div class="albazMoonLogo" aria-hidden="true"></div>
         <div class="albazHeroText">
-          <h1>أطلس الباز الذكي</h1>
-          <p>أطلس عالمي ذكي لرؤية الهلال — للموبايل والويب — ALBAZ-NE V2.2</p>
+          <h1>أطلس الباز الذكي لرؤية الهلال</h1>
+          <p>ALBAZ Smart Crescent Visibility Atlas<br>مدعوم بمعيار ALBAZ-NE V2.2</p>
           <span class="albazSmartPill">SMART ATLAS</span>
         </div>
       </div>`;
@@ -6400,7 +6396,7 @@ function openProfessionalReportNativeSafe(){
     <div class="albazTechRing r1"></div><div class="albazTechRing r2"></div><div class="albazTechRing r3"></div>
     <div class="albazTechBadge2"><span class="moon">☾</span><span class="code">&lt;/&gt; ALBAZ</span></div>
   </div>
-  <div class="albazTechMainTitle">ALBAZ SMART ATLAS</div>
+  <div class="albazTechMainTitle">ALBAZ Smart Crescent Visibility Atlas</div>
   <div class="albazTechMainSub">ASTRONOMY • PHYSICS • PROGRAMMING</div>
   <div class="albazTechTags"><span>✦ علم الفلك</span><span>⚛ الفيزياء</span><span>&lt;/&gt; البرمجة</span></div>
   <div class="albazTechScan"><i></i></div>
@@ -6492,7 +6488,7 @@ function openProfessionalReportNativeSafe(){
 <aside id="albazOfficialMenu" aria-label="القائمة الرئيسية لتطبيق الباز">
   <div class="albazMenuHead">
     <div class="albazMenuMiniLogo">☾</div>
-    <div><b>ALBAZ SMART ATLAS</b><span>OFFICIAL • ALBAZ-NE V2.2</span></div>
+    <div><b>ALBAZ Smart Crescent Visibility Atlas</b><span>مدعوم بمعيار ALBAZ-NE V2.2</span></div>
   </div>
 
   <div class="albazMenuGroupTitle">التنقل الرئيسي</div>
