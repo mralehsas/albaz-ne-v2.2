@@ -1,4 +1,4 @@
-const CACHE_NAME = 'albaz-ne-v2-2-v3-index-hardfix';
+const CACHE_NAME = 'albaz-ne-v2-2-v4-smart-atlas-android-ui';
 const STATIC_ASSETS = [
   './site.webmanifest',
   './ALBAZ_NE_V2_2_FULL_CRITERION_AR.pdf'
