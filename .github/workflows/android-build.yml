@@ -51,19 +51,19 @@ jobs:
         shell: bash
         run: |
           mkdir -p android/Dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk              android/Dist/ALBAZ_Smart_Crescent_Atlas_v2.2.1_DEBUG.apk
-          cp android/app/build/outputs/apk/release/app-release-unsigned.apk              android/Dist/ALBAZ_Smart_Crescent_Atlas_v2.2.1_RELEASE_UNSIGNED.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk              android/Dist/ALBAZ_Smart_Crescent_Atlas_v2.2.2_DEBUG.apk
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk              android/Dist/ALBAZ_Smart_Crescent_Atlas_v2.2.2_RELEASE_UNSIGNED.apk
 
       - name: Package Complete Android Studio Project
         shell: bash
         run: |
           rm -rf android/app/build android/.gradle android/build
-          zip -r ALBAZ_Smart_Crescent_Atlas_Android_v2.2.1_COMPLETE.zip android             -x "android/.idea/*" "android/**/.DS_Store"
+          zip -r ALBAZ_Smart_Crescent_Atlas_Android_v2.2.2_COMPLETE.zip android             -x "android/.idea/*" "android/**/.DS_Store"
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
-          name: ALBAZ-Android-APKs-v2.2.1
+          name: ALBAZ-Android-APKs-v2.2.2
           path: android/Dist/*
           if-no-files-found: error
           retention-days: 30
@@ -71,7 +71,7 @@ jobs:
       - name: Upload Complete Project
         uses: actions/upload-artifact@v4
         with:
-          name: ALBAZ-Android-Project-v2.2.1
-          path: ALBAZ_Smart_Crescent_Atlas_Android_v2.2.1_COMPLETE.zip
+          name: ALBAZ-Android-Project-v2.2.2
+          path: ALBAZ_Smart_Crescent_Atlas_Android_v2.2.2_COMPLETE.zip
           if-no-files-found: error
           retention-days: 30
