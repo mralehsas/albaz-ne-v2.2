@@ -2184,6 +2184,503 @@ html,body{padding-bottom:130px!important;}
 
 
 <meta name="albaz-build" content="V2.2-GITHUB-3D-HARDFIX-2026-09-08">
+
+<style id="albaz-smart-atlas-android-css">
+
+/* =========================================================
+   ALBAZ-NE V2.2 — SMART ATLAS ANDROID UI LAYER
+   UI ONLY — scientific engine untouched
+   ========================================================= */
+.albazMobileHero,
+.albazMobileControlCard,
+.albazMobileBottomNav,
+.albazMobileBackdrop{display:none}
+
+@media(max-width:760px){
+  :root{
+    --albaz-mobile-gold:#e9bd58;
+    --albaz-mobile-gold2:#c98d27;
+    --albaz-mobile-card:#071b30;
+    --albaz-mobile-card2:#0a223b;
+    --albaz-mobile-line:#2c557b;
+    --albaz-mobile-text:#eef6ff;
+    --albaz-mobile-muted:#b6c6d9;
+  }
+
+  html,body{
+    background:#06111f !important;
+    overflow-x:hidden !important;
+  }
+
+  body{
+    padding-bottom:96px !important;
+  }
+
+  .appShell{
+    width:100% !important;
+    max-width:none !important;
+    padding:0 !important;
+  }
+
+  header.appHeader{
+    position:relative !important;
+    top:auto !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    background:transparent !important;
+  }
+
+  .brandRow,
+  .quickNav{
+    display:none !important;
+  }
+
+  .versionCorner{
+    display:none !important;
+  }
+
+  .albazMobileHero{
+    display:block;
+    margin:0 0 14px;
+    padding:14px 16px 18px;
+    min-height:202px;
+    position:relative;
+    overflow:hidden;
+    border-radius:0 0 30px 30px;
+    border:1px solid rgba(233,189,88,.30);
+    border-top:0;
+    background:
+      radial-gradient(circle at 92% 18%, rgba(233,189,88,.16), transparent 28%),
+      linear-gradient(180deg,#08192c 0%,#061321 100%);
+    box-shadow:0 18px 40px rgba(0,0,0,.28);
+  }
+
+  .albazMobileHero::after{
+    content:'';
+    position:absolute;
+    inset:auto 0 0;
+    height:22px;
+    opacity:.72;
+    background:
+      radial-gradient(22px 16px at 3% 100%,#020914 98%,transparent 100%) 0 0/82px 22px repeat-x;
+    pointer-events:none;
+  }
+
+  .albazHeroTop{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    direction:ltr;
+    gap:12px;
+  }
+
+  .albazBuildBadge{
+    display:inline-flex;
+    align-items:center;
+    min-height:48px;
+    padding:0 16px;
+    border-radius:999px;
+    border:1px solid rgba(233,189,88,.52);
+    background:#092039;
+    color:#ffe5a2;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.2px;
+    direction:ltr;
+  }
+
+  .albazMenuBtn{
+    width:54px !important;
+    min-width:54px !important;
+    height:54px !important;
+    min-height:54px !important;
+    padding:0 !important;
+    display:grid !important;
+    place-items:center !important;
+    border-radius:18px !important;
+    background:#0b2744 !important;
+    border:1px solid #31597e !important;
+    color:#fff !important;
+    font-size:31px !important;
+    line-height:1 !important;
+    box-shadow:none !important;
+  }
+
+  .albazHeroMain{
+    margin-top:20px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:14px;
+    align-items:center;
+    direction:rtl;
+  }
+
+  .albazHeroText h1{
+    margin:0 !important;
+    font-size:29px !important;
+    line-height:1.2 !important;
+    color:#ffe09a !important;
+    font-weight:900 !important;
+    text-align:right !important;
+  }
+
+  .albazHeroText p{
+    margin:8px 0 0;
+    color:#c5d3e3;
+    font-size:13px;
+    font-weight:700;
+    line-height:1.65;
+  }
+
+  .albazMoonLogo{
+    width:76px;
+    height:76px;
+    border-radius:28px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(145deg,#ffdc7b,#cf9029);
+    box-shadow:0 12px 28px rgba(0,0,0,.24);
+    position:relative;
+  }
+  .albazMoonLogo::before{
+    content:'';
+    width:44px;
+    height:58px;
+    border-radius:50%;
+    background:#07162a;
+    transform:translateX(8px);
+    box-shadow:-11px 0 0 #ffe4a0;
+  }
+
+  .albazSmartPill{
+    display:inline-flex;
+    margin-top:14px;
+    padding:7px 12px;
+    border-radius:999px;
+    border:1px solid rgba(42,193,132,.55);
+    background:rgba(9,74,59,.50);
+    color:#66e9b7;
+    font-size:11px;
+    font-weight:900;
+    direction:ltr;
+  }
+
+  main{
+    display:block !important;
+    padding:0 10px 16px !important;
+  }
+
+  .mapPanel{
+    order:initial !important;
+    margin:0 !important;
+    border-radius:28px !important;
+  }
+
+  .mapPanel > h2{
+    padding:17px 16px !important;
+    font-size:20px !important;
+    text-align:right !important;
+  }
+
+  .mapPanel > h2::before{
+    content:'الخريطة الذكية 2D';
+    display:block;
+    color:#ffe09a;
+    font-size:20px;
+    font-weight:900;
+  }
+  .mapPanel > h2{
+    font-size:0 !important;
+  }
+
+  .mapPanel .body{
+    padding:12px !important;
+  }
+
+  .mapToolbar{
+    display:none !important;
+  }
+
+  .albazMobileControlCard{
+    display:block;
+    margin:0 0 14px;
+    padding:16px 14px;
+    border:1px solid #2d5377;
+    border-radius:28px;
+    background:linear-gradient(180deg,#082039,#06172a);
+    box-shadow:0 14px 32px rgba(0,0,0,.22);
+  }
+
+  .albazMobileControlHead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:14px;
+    direction:rtl;
+  }
+
+  .albazMobileControlHead b{
+    color:#ffe09a;
+    font-size:18px;
+  }
+
+  .albazMobileControlHead span{
+    color:#c1cede;
+    font-size:11px;
+    direction:ltr;
+    font-weight:800;
+  }
+
+  .albazMobileFields{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  .albazMobileField{
+    padding:10px 12px;
+    border-radius:20px;
+    background:#06192c;
+    border:1px solid #2d5377;
+  }
+
+  .albazMobileField label{
+    margin:0 0 7px !important;
+    color:#b8c8da !important;
+    font-size:12px !important;
+    font-weight:800;
+  }
+
+  .albazMobileField input,
+  .albazMobileField select{
+    min-height:42px !important;
+    border:0 !important;
+    padding:0 !important;
+    background:transparent !important;
+    color:#fff !important;
+    font-size:16px !important;
+    font-weight:800 !important;
+    box-shadow:none !important;
+  }
+
+  .albazMobileRun{
+    width:100% !important;
+    min-height:70px !important;
+    margin-top:12px !important;
+    border-radius:24px !important;
+    background:linear-gradient(180deg,#f0cf78,#d39b38) !important;
+    color:#181108 !important;
+    font-size:20px !important;
+    font-weight:900 !important;
+    box-shadow:0 14px 28px rgba(0,0,0,.22) !important;
+  }
+
+  .albazMobileActions{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:7px;
+    margin-top:11px;
+  }
+
+  .albazMobileActions button{
+    min-height:50px !important;
+    padding:7px 4px !important;
+    border-radius:16px !important;
+    border:1px solid #31597e !important;
+    background:#0a2744 !important;
+    color:#eef6ff !important;
+    box-shadow:none !important;
+    font-size:11px !important;
+    font-weight:800 !important;
+  }
+
+  .albazMobileProgress{
+    margin-top:12px;
+  }
+
+  .albazMobileProgressTrack{
+    height:10px;
+    border-radius:999px;
+    overflow:hidden;
+    border:1px solid #31597e;
+    background:#04111f;
+  }
+
+  .albazMobileProgressBar{
+    height:100%;
+    width:0%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#e9bd58,#45d087,#50c9ff);
+    transition:width .18s ease;
+  }
+
+  .albazMobileProgressText{
+    margin-top:8px;
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    color:#d7e3ef;
+    font-size:11px;
+    font-weight:800;
+  }
+
+  #mapStage{
+    min-height:0 !important;
+    border-radius:24px !important;
+  }
+
+  body.sao-view-2d #mapCanvas{
+    width:100% !important;
+    height:auto !important;
+    display:block !important;
+  }
+
+  #globeStage{
+    min-height:520px !important;
+    border-radius:24px !important;
+  }
+
+  #globeCanvas{
+    min-height:520px !important;
+  }
+
+  .odehColorPanel{
+    border-radius:20px !important;
+    margin-top:10px !important;
+  }
+
+  .odehColorStrip{
+    overflow-x:auto !important;
+    flex-wrap:nowrap !important;
+    justify-content:flex-start !important;
+    padding-bottom:4px;
+  }
+
+  .odehColorChip{
+    flex:0 0 auto !important;
+    font-size:11px !important;
+  }
+
+  .mapBottomControls{
+    display:none !important;
+  }
+
+  /* settings drawer */
+  .panelStack{
+    position:fixed !important;
+    top:0;
+    right:0;
+    bottom:0;
+    z-index:510;
+    width:min(90vw,390px);
+    padding:16px 12px 110px !important;
+    overflow-y:auto;
+    background:#061321;
+    box-shadow:-20px 0 55px rgba(0,0,0,.48);
+    transform:translateX(105%);
+    transition:transform .24s ease;
+    gap:12px !important;
+  }
+
+  body.albaz-drawer-open .panelStack{
+    transform:translateX(0);
+  }
+
+  .panelStack::before{
+    content:'إعدادات معيار الباز';
+    display:block;
+    padding:12px 14px;
+    margin-bottom:4px;
+    border-radius:18px;
+    color:#ffe09a;
+    font-size:18px;
+    font-weight:900;
+    background:#0b2744;
+    border:1px solid #31597e;
+  }
+
+  .albazMobileBackdrop{
+    position:fixed;
+    inset:0;
+    z-index:500;
+    background:rgba(0,0,0,.58);
+    backdrop-filter:blur(2px);
+  }
+
+  body.albaz-drawer-open .albazMobileBackdrop{
+    display:block;
+  }
+
+  /* bottom navigation */
+  .albazMobileBottomNav{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    position:fixed;
+    z-index:620;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:10px;
+    width:calc(100% - 26px);
+    max-width:650px;
+    padding:8px;
+    border-radius:28px;
+    border:1px solid rgba(233,189,88,.30);
+    background:rgba(5,17,31,.97);
+    box-shadow:0 18px 48px rgba(0,0,0,.48);
+    backdrop-filter:blur(14px);
+  }
+
+  .albazMobileBottomNav button{
+    min-height:64px !important;
+    padding:7px 4px !important;
+    border-radius:20px !important;
+    border:0 !important;
+    background:transparent !important;
+    color:#c4d2e2 !important;
+    box-shadow:none !important;
+    font-size:11px !important;
+    font-weight:900 !important;
+  }
+
+  .albazMobileBottomNav button .ico{
+    display:block;
+    margin-bottom:4px;
+    font-size:21px;
+  }
+
+  .albazMobileBottomNav button.active{
+    color:#ffe09a !important;
+    border:1px solid rgba(233,189,88,.30) !important;
+    background:rgba(233,189,88,.08) !important;
+  }
+
+  #calcCard,
+  #pointCard,
+  #exportCard{
+    border-radius:22px !important;
+  }
+
+  .versionPill{display:none !important}
+
+  /* keep scientific settings available but compact */
+  .panelStack .card h2{
+    font-size:15px !important;
+  }
+}
+
+@media(max-width:420px){
+  .albazHeroText h1{font-size:25px !important}
+  .albazBuildBadge{font-size:10px;padding:0 12px}
+  .albazMobileActions{grid-template-columns:repeat(3,1fr)}
+  .albazMobileFields{grid-template-columns:1fr}
+}
+
+</style>
+<meta name="albaz-ui-build" content="V2.2-SMART-ATLAS-ANDROID-READY-V2">
 </head>
 <body>
 <div id="hilalSplashScreen" aria-label="شاشة افتتاح تطبيق معيار الباز لرؤية الهلال — ALBAZ-NE V2.2">
@@ -5698,6 +6195,240 @@ function openProfessionalReportNativeSafe(){
       }
     },120);
   });
+})();
+</script>
+
+
+
+<script id="albaz-smart-atlas-android-ui">
+(function(){
+  'use strict';
+
+  function byId(id){ return document.getElementById(id); }
+
+  function dispatchChange(el){
+    try{
+      el.dispatchEvent(new Event('change',{bubbles:true}));
+    }catch(e){}
+  }
+
+  function makeHero(){
+    if(document.querySelector('.albazMobileHero')) return;
+    const header=document.querySelector('header.appHeader');
+    if(!header) return;
+
+    const hero=document.createElement('section');
+    hero.className='albazMobileHero';
+    hero.innerHTML=`
+      <div class="albazHeroTop">
+        <div class="albazBuildBadge">v2.2 SMART MAX • ALBAZ-NE</div>
+        <button class="albazMenuBtn" id="albazMenuBtn" type="button" aria-label="القائمة">☰</button>
+      </div>
+      <div class="albazHeroMain">
+        <div class="albazMoonLogo" aria-hidden="true"></div>
+        <div class="albazHeroText">
+          <h1>أطلس الباز الذكي</h1>
+          <p>معيار ALBAZ-NE V2.2 لرؤية الهلال — أطلس عالمي للموبايل والويب</p>
+          <span class="albazSmartPill">SMART ATLAS</span>
+        </div>
+      </div>`;
+    header.appendChild(hero);
+  }
+
+  function buildMobileControls(){
+    if(byId('albazMobileControlCard')) return;
+    const mapCard=byId('mapCard');
+    if(!mapCard) return;
+
+    const card=document.createElement('section');
+    card.className='albazMobileControlCard';
+    card.id='albazMobileControlCard';
+    card.innerHTML=`
+      <div class="albazMobileControlHead">
+        <b>الخريطة الذكية 2D</b>
+        <span>GLOBAL 1° + DIRECT POINT</span>
+      </div>
+      <div class="albazMobileFields">
+        <div class="albazMobileField">
+          <label for="albazMobileCapital">الموقع المرجعي</label>
+          <select id="albazMobileCapital"></select>
+        </div>
+        <div class="albazMobileField">
+          <label for="albazMobileDate">التاريخ</label>
+          <input id="albazMobileDate" type="date">
+        </div>
+      </div>
+      <button id="albazMobileRun" class="albazMobileRun" type="button">احسب الخريطة الذكية عالية الدقة</button>
+      <div class="albazMobileActions">
+        <button id="albazMobileOriginal" type="button">الخريطة الأصلية</button>
+        <button id="albazMobilePoint" type="button">حلّ الموقع</button>
+        <button id="albazMobileQuick" type="button">معاينة سريعة</button>
+        <button id="albazMobile3D" type="button">افتح 3D</button>
+        <button id="albazMobilePNG" type="button">حفظ PNG</button>
+      </div>
+      <div class="albazMobileProgress">
+        <div class="albazMobileProgressTrack"><div id="albazMobileProgressBar" class="albazMobileProgressBar"></div></div>
+        <div class="albazMobileProgressText"><span id="albazMobilePct">0%</span><span id="albazMobileStatus">جاهز — الخريطة الأصلية.</span></div>
+      </div>`;
+
+    mapCard.parentNode.insertBefore(card,mapCard);
+
+    const srcDate=byId('dateInput');
+    const mobDate=byId('albazMobileDate');
+    if(srcDate && mobDate){
+      mobDate.value=srcDate.value || '';
+      mobDate.addEventListener('change',function(){
+        srcDate.value=mobDate.value;
+        dispatchChange(srcDate);
+      });
+      srcDate.addEventListener('change',function(){ mobDate.value=srcDate.value || ''; });
+    }
+
+    const srcCap=byId('capitalSelect');
+    const mobCap=byId('albazMobileCapital');
+    function syncCaps(){
+      if(!srcCap || !mobCap) return;
+      mobCap.innerHTML=srcCap.innerHTML;
+      mobCap.value=srcCap.value;
+    }
+    syncCaps();
+    setTimeout(syncCaps,150);
+    setTimeout(syncCaps,800);
+    if(srcCap && mobCap){
+      mobCap.addEventListener('change',function(){
+        srcCap.value=mobCap.value;
+        dispatchChange(srcCap);
+        setTimeout(function(){ mobCap.value=srcCap.value; },30);
+      });
+      srcCap.addEventListener('change',function(){ mobCap.value=srcCap.value; });
+    }
+
+    byId('albazMobileRun').addEventListener('click',function(){ byId('runBtn')?.click(); });
+    byId('albazMobileOriginal').addEventListener('click',function(){ byId('clearBtn')?.click(); });
+    byId('albazMobilePoint').addEventListener('click',function(){ byId('pointBtn')?.click(); });
+    byId('albazMobileQuick').addEventListener('click',function(){
+      byId('stepDeg').value='5';
+      byId('runBtn')?.click();
+    });
+    byId('albazMobile3D').addEventListener('click',function(){
+      byId('view3DBtn')?.click();
+      setBottomActive('3d');
+      setTimeout(function(){ byId('mapCard')?.scrollIntoView({behavior:'smooth',block:'start'}); },50);
+    });
+    byId('albazMobilePNG').addEventListener('click',function(){ byId('exportBtn')?.click(); });
+  }
+
+  function makeBottomNav(){
+    if(document.querySelector('.albazMobileBottomNav')) return;
+    const nav=document.createElement('nav');
+    nav.className='albazMobileBottomNav';
+    nav.setAttribute('aria-label','التنقل الرئيسي');
+    nav.innerHTML=`
+      <button id="albazNavHome" type="button"><span class="ico">⌂</span>الرئيسية</button>
+      <button id="albazNav2D" class="active" type="button"><span class="ico">🗺️</span>2D</button>
+      <button id="albazNav3D" type="button"><span class="ico">🌐</span>3D</button>
+      <button id="albazNavReport" type="button"><span class="ico">📄</span>التقرير</button>`;
+    document.body.appendChild(nav);
+
+    byId('albazNavHome').addEventListener('click',function(){
+      window.scrollTo({top:0,behavior:'smooth'});
+      setBottomActive('home');
+    });
+    byId('albazNav2D').addEventListener('click',function(){
+      byId('view2DBtn')?.click();
+      setBottomActive('2d');
+      byId('mapCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    byId('albazNav3D').addEventListener('click',function(){
+      byId('view3DBtn')?.click();
+      setBottomActive('3d');
+      byId('mapCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    byId('albazNavReport').addEventListener('click',function(){
+      byId('professionalReportBtn')?.click();
+      setBottomActive('report');
+    });
+  }
+
+  function setBottomActive(mode){
+    const map={home:'albazNavHome','2d':'albazNav2D','3d':'albazNav3D',report:'albazNavReport'};
+    ['albazNavHome','albazNav2D','albazNav3D','albazNavReport'].forEach(function(id){
+      byId(id)?.classList.toggle('active',map[mode]===id);
+    });
+  }
+
+  function makeBackdrop(){
+    if(document.querySelector('.albazMobileBackdrop')) return;
+    const d=document.createElement('div');
+    d.className='albazMobileBackdrop';
+    d.addEventListener('click',function(){ document.body.classList.remove('albaz-drawer-open'); });
+    document.body.appendChild(d);
+  }
+
+  function bindDrawer(){
+    byId('albazMenuBtn')?.addEventListener('click',function(){
+      document.body.classList.toggle('albaz-drawer-open');
+    });
+    document.querySelectorAll('.panelStack button,.panelStack a').forEach(function(el){
+      el.addEventListener('click',function(){
+        if(window.innerWidth<=760) document.body.classList.remove('albaz-drawer-open');
+      });
+    });
+  }
+
+  function mirrorProgress(){
+    const sourceBar=byId('bar');
+    const sourceStatus=byId('status');
+    const mobileBar=byId('albazMobileProgressBar');
+    const mobilePct=byId('albazMobilePct');
+    const mobileStatus=byId('albazMobileStatus');
+    if(!mobileBar) return;
+
+    function sync(){
+      let w=(sourceBar && sourceBar.style.width) ? sourceBar.style.width : '0%';
+      if(!w) w='0%';
+      mobileBar.style.width=w;
+      if(mobilePct) mobilePct.textContent=w;
+      if(mobileStatus && sourceStatus) mobileStatus.textContent=sourceStatus.textContent || 'جاهز.';
+    }
+    sync();
+
+    if(sourceBar){
+      new MutationObserver(sync).observe(sourceBar,{attributes:true,attributeFilter:['style']});
+    }
+    if(sourceStatus){
+      new MutationObserver(sync).observe(sourceStatus,{childList:true,subtree:true,characterData:true});
+    }
+    setInterval(sync,800);
+  }
+
+  function mobileInitialView(){
+    if(window.innerWidth<=760){
+      setTimeout(function(){
+        try{
+          if(typeof setMapView==='function') setMapView('2d');
+          else byId('view2DBtn')?.click();
+          setBottomActive('2d');
+        }catch(e){}
+      },60);
+    }
+  }
+
+  function init(){
+    makeHero();
+    buildMobileControls();
+    makeBackdrop();
+    makeBottomNav();
+    bindDrawer();
+    mirrorProgress();
+    mobileInitialView();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init,{once:true});
+  }else{
+    init();
+  }
 })();
 </script>
 
