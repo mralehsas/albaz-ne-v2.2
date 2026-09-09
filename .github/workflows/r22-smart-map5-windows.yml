@@ -6,7 +6,8 @@ on:
       - r22-smart-suite
     paths:
       - '.github/workflows/r22-smart-map5-windows.yml'
-      - 'tools/r21_to_r22_smart.patch'\n      - 'tools/build_r21_from_r20.py'
+      - 'tools/r21_to_r22_smart.patch'
+      - 'tools/build_r21_from_r20.py'
   workflow_dispatch:
 
 jobs:
