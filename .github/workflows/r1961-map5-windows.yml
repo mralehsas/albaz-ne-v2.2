@@ -50,12 +50,22 @@ jobs:
           '@
           $py | python -
 
-      - name: Fetch pinned dependencies
+      - name: Fetch exact frozen dependencies
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cosinekitty/astronomy/v2.1.0/source/c/astronomy.c" -OutFile "engine\thirdparty\astronomy.c"
-          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cosinekitty/astronomy/v2.1.0/source/c/astronomy.h" -OutFile "engine\thirdparty\astronomy.h"
+          function Fetch-GitBlob([string]$Sha, [string]$OutFile) {
+            $u = "https://api.github.com/repos/cosinekitty/astronomy/git/blobs/" + $Sha
+            $j = Invoke-RestMethod -Uri $u -Headers @{ "User-Agent" = "ALBAZ-R1961-MAP5" }
+            $b64 = ([string]$j.content) -replace "\\s", ""
+            [IO.File]::WriteAllBytes($OutFile, [Convert]::FromBase64String($b64))
+          }
+          Fetch-GitBlob "60d36e3002be6e58ad75619649bff4aabcc43239" "engine\thirdparty\astronomy.c"
+          Fetch-GitBlob "9d2455980102eda0c0fda6e66ac9fefd0c999712" "engine\thirdparty\astronomy.h"
           Invoke-WebRequest -Uri "https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h" -OutFile "engine\thirdparty\stb_image_write.h"
+          $ac = (Get-FileHash engine\thirdparty\astronomy.c -Algorithm SHA256).Hash.ToLowerInvariant()
+          $ah = (Get-FileHash engine\thirdparty\astronomy.h -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($ac -ne "a7f6bde24e3a53f24aff727080916809b5664117ebf3fef6e916da56a51d4fbd") { throw "astronomy.c SHA mismatch" }
+          if ($ah -ne "d9cc0379035b69f1b75034879398e254036c708448d5427396596cd2c7f0d843") { throw "astronomy.h SHA mismatch" }
 
       - name: Build PPD1 and PPD4 with MSVC OpenMP
         shell: pwsh
