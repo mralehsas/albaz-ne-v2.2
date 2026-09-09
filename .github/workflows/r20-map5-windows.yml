@@ -168,6 +168,25 @@ jobs:
             if (!(Test-Path $p) -or (Get-Item $p).Length -le 0) { throw "Missing output $f" }
           }
 
+      - name: Smoke R20 five-map final render 2026-09-12 PPD4
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force smoke4 | Out-Null
+          $env:OMP_NUM_THREADS="4"
+          $sw=[Diagnostics.Stopwatch]::StartNew()
+          & .\bin\hilal_unified_map5_engine.exe 2026-09-12 map5 evening smoke4\odeh.png smoke4\yallop.png smoke4\allawi.png smoke4\saao.png smoke4\albaz.png
+          if ($LASTEXITCODE -ne 0) { throw "R20 MAP5 PPD4 smoke failed" }
+          $sw.Stop()
+          Write-Host ("R20_PPD4_SECONDS="+[Math]::Round($sw.Elapsed.TotalSeconds,3))
+          foreach ($f in @("odeh.png","yallop.png","allawi.png","saao.png","albaz.png")) {
+            $p=Join-Path smoke4 $f
+            if (!(Test-Path $p) -or (Get-Item $p).Length -le 0) { throw "Missing PPD4 output $f" }
+          }
+          $probe = [System.Drawing.Image]::FromFile((Join-Path smoke4 "albaz.png"))
+          try {
+            if ($probe.Width -ne 1440 -or $probe.Height -ne 720) { throw "PPD4 dimensions are not 1440x720" }
+          } finally { $probe.Dispose() }
+
       - name: Hash R20 engines
         shell: pwsh
         run: |
@@ -184,4 +203,5 @@ jobs:
             bin/hilal_unified_map5_engine.exe
             bin/SHA256_R20_MAP5.txt
             smoke/*.png
+            smoke4/*.png
           if-no-files-found: error
