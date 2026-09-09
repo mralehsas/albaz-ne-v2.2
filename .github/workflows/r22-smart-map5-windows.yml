@@ -6,7 +6,7 @@ on:
       - r22-smart-suite
     paths:
       - '.github/workflows/r22-smart-map5-windows.yml'
-      - 'tools/r21_to_r22_smart.patch'
+      - 'tools/build_r22_from_r21.py'
       - 'tools/build_r21_from_r20.py'
   workflow_dispatch:
 
@@ -26,11 +26,11 @@ jobs:
           python tools\build_r21_from_r20.py
           $r21=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($r21 -ne "10dc0e433f60fde27d360ba8966366c26e07566d3861244864c4a80e7768eb26") { throw "R21 frozen source SHA mismatch: $r21" }
-          git apply --whitespace=nowarn tools/r21_to_r22_smart.patch
-          if ($LASTEXITCODE -ne 0) { throw "R22 audited patch failed" }
+          python tools\build_r22_from_r21.py
+          if ($LASTEXITCODE -ne 0) { throw "R22 deterministic transform failed" }
           $sha=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
           Write-Host ("R22_SOURCE_SHA256="+$sha)
-          if ($sha -ne "62cf5a44b27d84cb2da8729f7791120d165c6f39d1f560e0a6683ebaf88f81b0") { throw "R22 source SHA mismatch: $sha" }
+          if ($sha -ne "20e420dcc723ebdbd5e140c42d8deabc8ca91dcad56b4b94bb84e6ec3f50e34a") { throw "R22 source SHA mismatch: $sha" }
 
       - name: Fetch exact frozen Astronomy Engine dependencies
         shell: pwsh
