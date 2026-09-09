@@ -1,0 +1,190 @@
+name: R22 Smart Maps Windows x64
+
+on:
+  push:
+    branches:
+      - r22-smart-suite
+    paths:
+      - '.github/workflows/r22-smart-map5-windows.yml'
+      - 'tools/r22_map_engine.b64'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reconstruct exact R22 source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force engine\thirdparty, bin | Out-Null
+          $b64=(Get-Content tools\r22_map_engine.b64 -Raw).Trim()
+          [IO.File]::WriteAllBytes("r22_src.gz",[Convert]::FromBase64String($b64))
+          python -c "import gzip,pathlib; pathlib.Path(r'engine/hilal_unified_map5_engine.cc').write_bytes(gzip.decompress(pathlib.Path('r22_src.gz').read_bytes()))"
+          $sha=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
+          Write-Host ("R22_SOURCE_SHA256="+$sha)
+          if ($sha -ne "62cf5a44b27d84cb2da8729f7791120d165c6f39d1f560e0a6683ebaf88f81b0") { throw "R22 source SHA mismatch: $sha" }
+
+      - name: Fetch exact frozen Astronomy Engine dependencies
+        shell: pwsh
+        run: |
+          function Fetch-GitBlob([string]$Sha,[string]$OutFile) {
+            $u="https://api.github.com/repos/cosinekitty/astronomy/git/blobs/"+$Sha
+            $j=Invoke-RestMethod -Uri $u -Headers @{ "User-Agent"="ALBAZ-R22-SMART" }
+            $b64=([string]$j.content) -replace "\s",""
+            [IO.File]::WriteAllBytes($OutFile,[Convert]::FromBase64String($b64))
+          }
+          Fetch-GitBlob "60d36e3002be6e58ad75619649bff4aabcc43239" "engine\thirdparty\astronomy.c"
+          Fetch-GitBlob "9d2455980102eda0c0fda6e66ac9fefd0c999712" "engine\thirdparty\astronomy.h"
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h" -OutFile "engine\thirdparty\stb_image_write.h"
+          if ((Get-FileHash engine\thirdparty\astronomy.c -Algorithm SHA256).Hash.ToLowerInvariant() -ne "a7f6bde24e3a53f24aff727080916809b5664117ebf3fef6e916da56a51d4fbd") { throw "astronomy.c SHA mismatch" }
+          if ((Get-FileHash engine\thirdparty\astronomy.h -Algorithm SHA256).Hash.ToLowerInvariant() -ne "d9cc0379035b69f1b75034879398e254036c708448d5427396596cd2c7f0d843") { throw "astronomy.h SHA mismatch" }
+
+      - name: Build R22 PPD1 smart and PPD4 final
+        shell: pwsh
+        run: |
+          $vswhere="${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs=& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw "Visual Studio C++ toolchain not found" }
+          $vcvars=Join-Path $vs "VC\Auxiliary\Build\vcvars64.bat"
+          $cmd=@"
+          @echo off
+          call "$vcvars"
+          if errorlevel 1 exit /b 1
+          cl /nologo /O2 /EHsc /std:c++20 /openmp /DNDEBUG /DPIXEL_PER_DEGREE=1 engine\hilal_unified_map5_engine.cc engine\thirdparty\astronomy.c /Fe:bin\hilal_unified_map5_engine_fast.exe
+          if errorlevel 1 exit /b 1
+          cl /nologo /O2 /EHsc /std:c++20 /openmp /DNDEBUG /DPIXEL_PER_DEGREE=4 engine\hilal_unified_map5_engine.cc engine\thirdparty\astronomy.c /Fe:bin\hilal_unified_map5_engine.exe
+          if errorlevel 1 exit /b 1
+          "@
+          Set-Content build_r22.cmd $cmd -Encoding ASCII
+          cmd /c build_r22.cmd
+          if ($LASTEXITCODE -ne 0) { throw "MSVC build failed" }
+
+      - name: Verify signatures chronology and ALBAZ boundary
+        shell: pwsh
+        run: |
+          $v1=& .\bin\hilal_unified_map5_engine_fast.exe version | Out-String
+          $v4=& .\bin\hilal_unified_map5_engine.exe version | Out-String
+          Write-Host $v1
+          Write-Host $v4
+          if ($v1 -notmatch "ALBAZ_MAP_ENGINE_R22_SMART" -or $v1 -notmatch "smart_adaptive=1" -or $v1 -notmatch "smart_output_ppd=2" -or $v1 -notmatch "ppd=1" -or $v1 -notmatch "batch=map5") { throw "R22 PPD1 smart signature mismatch" }
+          if ($v4 -notmatch "ALBAZ_MAP_ENGINE_R22_SMART" -or $v4 -notmatch "ppd=4" -or $v4 -notmatch "batch=map5") { throw "R22 PPD4 signature mismatch" }
+          $phase=& .\bin\hilal_unified_map5_engine_fast.exe 2026-09-12 phase-debug | Out-String
+          Write-Host $phase
+          if ($phase -notmatch "PROBE_PREV=2026-09-11T03:27:") { throw "R22 chronology regression failed" }
+          if ($phase -notmatch "PROBE_NEXT=2026-10-10T15:50:") { throw "R22 next-conjunction regression failed" }
+          $b=& .\bin\hilal_unified_map5_engine_fast.exe albaz-eval 1 6.009854500758429 | Out-String
+          Write-Host $b
+          if ($b -notmatch "V=([-+0-9.eE]+)") { throw "V missing" }
+          if ([Math]::Abs([double]$Matches[1]) -gt 1e-12) { throw "V boundary mismatch" }
+          if ($b -notmatch "P=([-+0-9.eE]+)") { throw "P missing" }
+          if ([Math]::Abs([double]$Matches[1]-0.376742538335999) -gt 1e-12) { throw "P boundary mismatch" }
+
+      - name: Freeze R21 science lane inside R22
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force science_ppd1 | Out-Null
+          & .\bin\hilal_unified_map5_engine_fast.exe 2026-09-12 map5 evening science_ppd1\odeh.png science_ppd1\yallop.png science_ppd1\allawi.png science_ppd1\saao.png science_ppd1\albaz.png
+          if ($LASTEXITCODE -ne 0) { throw "R22 science lane render failed" }
+          $expected=@{
+            "odeh.png"="6cf2b80f6d998ed75c388cb922aa46c2c108b611a0d82f3f2637c42686f315ad";
+            "yallop.png"="bebb85f278221f83944fb5ee6a844431f997538d30d7e10b3786dd55d528143d";
+            "allawi.png"="806179c799c9396f7f8a8811e6dcdac8a3a4409e935f1182b5cfab666d7ad464";
+            "saao.png"="1750d3cf56f1384cf6dab424070a7514f42c1df4c493a10c1bc75f8b14c3d31b";
+            "albaz.png"="8d183000cf893abeb931ea6536a3e0a713c36ad20c09f5e8605a1fb5d343209d"
+          }
+          foreach ($n in $expected.Keys) {
+            $h=(Get-FileHash ("science_ppd1\"+$n) -Algorithm SHA256).Hash.ToLowerInvariant()
+            Write-Host ("R21_SCIENCE_"+$n+"="+$h)
+            if ($h -ne $expected[$n]) { throw "R21 science changed in R22: $n" }
+          }
+
+      - name: Render R22 smart preview
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force smart_ppd2 | Out-Null
+          $env:OMP_NUM_THREADS="4"
+          $sw=[Diagnostics.Stopwatch]::StartNew()
+          $out=& .\bin\hilal_unified_map5_engine_fast.exe 2026-09-12 map5-smart evening smart_ppd2\odeh.png smart_ppd2\yallop.png smart_ppd2\allawi.png smart_ppd2\saao.png smart_ppd2\albaz.png | Out-String
+          if ($LASTEXITCODE -ne 0) { throw "R22 smart preview failed" }
+          $sw.Stop()
+          Write-Host $out
+          Write-Host ("R22_SMART_PPD2_SECONDS="+[Math]::Round($sw.Elapsed.TotalSeconds,3))
+          if ($out -notmatch "SMART_OUTPUT_PPD=2") { throw "Smart PPD marker missing" }
+          if ($out -notmatch "SMART_REFINED_FRACTION=([0-9.]+)") { throw "Smart refinement fraction missing" }
+          Write-Host ("R22_SMART_REFINED_FRACTION="+$Matches[1])
+          Add-Type -AssemblyName System.Drawing
+          $im=[System.Drawing.Image]::FromFile((Resolve-Path smart_ppd2\albaz.png))
+          try { if ($im.Width -ne 720 -or $im.Height -ne 360) { throw "Smart preview dimensions mismatch" } } finally { $im.Dispose() }
+
+      - name: Render exact PPD4 final
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force final_ppd4 | Out-Null
+          $env:OMP_NUM_THREADS="4"
+          $sw=[Diagnostics.Stopwatch]::StartNew()
+          & .\bin\hilal_unified_map5_engine.exe 2026-09-12 map5 evening final_ppd4\odeh.png final_ppd4\yallop.png final_ppd4\allawi.png final_ppd4\saao.png final_ppd4\albaz.png
+          if ($LASTEXITCODE -ne 0) { throw "R22 final PPD4 failed" }
+          $sw.Stop()
+          Write-Host ("R22_FINAL_PPD4_SECONDS="+[Math]::Round($sw.Elapsed.TotalSeconds,3))
+          Add-Type -AssemblyName System.Drawing
+          $im=[System.Drawing.Image]::FromFile((Resolve-Path final_ppd4\albaz.png))
+          try { if ($im.Width -ne 1440 -or $im.Height -ne 720) { throw "Final dimensions mismatch" } } finally { $im.Dispose() }
+
+      - name: Measure smart-preview agreement with exact final
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check -q pillow
+          $py=@'
+          from PIL import Image
+          from pathlib import Path
+          names=["odeh","yallop","allawi","saao","albaz"]
+          lines=[]
+          agreements=[]
+          for n in names:
+              s=Image.open(Path("smart_ppd2")/(n+".png")).convert("RGBA")
+              f=Image.open(Path("final_ppd4")/(n+".png")).convert("RGBA")
+              sp=s.load(); fp=f.load()
+              w,h=s.size
+              same=0
+              total=w*h
+              # PPD2: lon=-180+x/2, lat=89.5-y/2
+              # PPD4 matching coordinates: x4=2*x2, y4=2*y2+1.
+              for y in range(h):
+                  fy=2*y+1
+                  for x in range(w):
+                      if sp[x,y] == fp[2*x,fy]:
+                          same += 1
+              pct=100.0*same/total
+              agreements.append(pct)
+              lines.append(f"{n.upper()}_AGREEMENT={pct:.6f}% ({same}/{total})")
+          overall=sum(agreements)/len(agreements)
+          lines.append(f"MEAN_AGREEMENT={overall:.6f}%")
+          Path("R22_SMART_ACCURACY.txt").write_text("\n".join(lines)+"\n",encoding="utf-8")
+          print("\n".join(lines))
+          if min(agreements) < 97.0:
+              raise SystemExit("Smart preview agreement below 97% for at least one criterion")
+          '@
+          $py | python -
+
+      - name: Hash R22 engines
+        shell: pwsh
+        run: |
+          Get-FileHash bin\hilal_unified_map5_engine_fast.exe -Algorithm SHA256 | Format-List | Out-File bin\SHA256_R22_MAP5.txt
+          Get-FileHash bin\hilal_unified_map5_engine.exe -Algorithm SHA256 | Format-List | Out-File -Append bin\SHA256_R22_MAP5.txt
+          Get-Content bin\SHA256_R22_MAP5.txt
+
+      - name: Upload R22 engines and witnesses
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALBAZ_R22_SMART_MAPS_WINDOWS_X64
+          path: |
+            bin/hilal_unified_map5_engine_fast.exe
+            bin/hilal_unified_map5_engine.exe
+            bin/SHA256_R22_MAP5.txt
+            R22_SMART_ACCURACY.txt
+            science_ppd1/*.png
+            smart_ppd2/*.png
+            final_ppd4/*.png
+          if-no-files-found: error
