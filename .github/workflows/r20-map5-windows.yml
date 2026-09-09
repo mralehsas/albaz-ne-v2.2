@@ -52,9 +52,15 @@ jobs:
               else:
                   s="#include <vector>\n"+s
 
+          s=s.replace("// R19.6 IQ200 UNIFIED MAP5 FAST PATH","// R20 IQ200 UNIFIED MAP5 SCIENTIFIC-HD FAST PATH")
           s=s.replace("ALBAZ_UNIFIED_MAP5_ENGINE_R19_6","ALBAZ_UNIFIED_MAP5_ENGINE_R20_HD")
           s=s.replace("unified-map5-r19.6-2026-09-08","unified-map5-r20-hd-2026-09-09")
           s=s.replace("HILAL_UNIFIED_MAP5_R19_6","HILAL_UNIFIED_MAP5_R20_HD")
+          s=s.replace("    bool line_oy=false, line_allawi=false, line_saao=false;\n    double time_oy=INFINITY, time_allawi=INFINITY;\n","")
+          s=s.replace("            out.time_oy = best_time.ut;\n            out.line_oy = ((int)std::round((best_time.ut - pb.nearest.ut)*24.0*20.0) % 20) == 0;\n","")
+          s=s.replace("                out.time_allawi = allawi_best.time.ut;\n                out.line_allawi = ((int)std::round((allawi_best.time.ut - pb.nearest.ut)*24.0*20.0) % 20) == 0;\n","")
+          s=s.replace("            out.line_saao = ((int)std::round((sunset.time.ut - pb.nearest.ut)*24.0*20.0) % 20) == 0;\n","")
+          s=s.replace("Invalid command. Production R19.6 supports map5 only.","Invalid command. Production R20 supports MAP5 only.")
 
           start=s.index("static int render_map5_evening(")
           end=s.index("\nstatic int cmd_albaz_eval_v22", start)
@@ -99,6 +105,8 @@ jobs:
           p.write_text(s,encoding="utf-8")
           '@
           $py | python -
+          $srcSha=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($srcSha -ne "43f275c5187a31ea1acaf14432aad51032c170893aa74a1a2f91e697f60fcb58") { throw "R20 source SHA mismatch: $srcSha" }
 
       - name: Fetch exact frozen Astronomy Engine dependencies
         shell: pwsh
