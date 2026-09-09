@@ -1,0 +1,52 @@
+name: R22 Natural Earth 10m Basemap Assets
+
+on:
+  push:
+    branches:
+      - r22-smart-suite
+    paths:
+      - '.github/workflows/r22-natural-earth.yml'
+  workflow_dispatch:
+
+jobs:
+  build-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Natural Earth 1:10m vector layers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ne10m
+          base="https://naciscdn.org/naturalearth/10m"
+          curl -fL --retry 3 "$base/physical/ne_10m_land.zip" -o ne10m/ne_10m_land.zip
+          curl -fL --retry 3 "$base/physical/ne_10m_coastline.zip" -o ne10m/ne_10m_coastline.zip
+          curl -fL --retry 3 "$base/physical/ne_10m_lakes.zip" -o ne10m/ne_10m_lakes.zip
+          curl -fL --retry 3 "$base/physical/ne_10m_minor_islands.zip" -o ne10m/ne_10m_minor_islands.zip
+          curl -fL --retry 3 "$base/cultural/ne_10m_admin_0_countries.zip" -o ne10m/ne_10m_admin_0_countries.zip
+
+      - name: Extract layers and generate metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ne10m/extracted
+          for z in ne10m/*.zip; do unzip -q "$z" -d ne10m/extracted; done
+          sha256sum ne10m/*.zip > ne10m/SHA256_NATURAL_EARTH.txt
+          cat > ne10m/README_R22_BASEMAP.txt <<'EOF'
+          R22 SMART BASEMAP SOURCE
+          Natural Earth 1:10m vector data.
+          Layers: land, coastline, lakes, minor islands, admin-0 countries.
+          Natural Earth data is public domain.
+          Source: https://www.naturalearthdata.com/
+          EOF
+
+      - name: Upload R22 Natural Earth assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALBAZ_R22_NATURAL_EARTH_10M
+          path: |
+            ne10m/extracted/**
+            ne10m/SHA256_NATURAL_EARTH.txt
+            ne10m/README_R22_BASEMAP.txt
+          if-no-files-found: error
