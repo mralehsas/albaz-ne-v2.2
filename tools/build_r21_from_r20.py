@@ -161,4 +161,4 @@ one('        fprintf(stderr, "Usage: <date> map5 evening <odeh.png> <yallop.png>
 one('    astro_time_t time = Astronomy_MakeTime(year, month, day, 0, 0, 0);\n\n    if (!strcmp(argv[2], "map5")) {',
     '    astro_time_t time = Astronomy_MakeTime(year, month, day, 0, 0, 0);\n\n    if (!strcmp(argv[2], "phase-debug")) {\n        return cmd_phase_debug(time);\n    }\n\n    if (!strcmp(argv[2], "map5")) {','phase route')
 one('Invalid command. Production R20 supports MAP5 only.','Invalid command. Production R21 supports MAP5 only.','invalid')
-p.write_text(s,encoding='utf-8')
+p.write_bytes(s.encode('utf-8'))
