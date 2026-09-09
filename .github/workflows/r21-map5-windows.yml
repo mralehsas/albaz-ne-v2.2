@@ -1,0 +1,144 @@
+name: R21 Maps Rebuild Windows x64
+
+on:
+  push:
+    branches:
+      - r21-maps-rebuild
+    paths:
+      - '.github/workflows/r21-map5-windows.yml'
+      - 'tools/build_r21_from_r20.py'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reconstruct frozen R20 source and transform exactly to R21
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force engine\thirdparty, bin | Out-Null
+          $b64=(Get-Content tools\r20_src.b64 -Raw).Trim()
+          [IO.File]::WriteAllBytes("r20_src.gz",[Convert]::FromBase64String($b64))
+          python -c "import gzip,pathlib; pathlib.Path(r'engine/hilal_unified_map5_engine.cc').write_bytes(gzip.decompress(pathlib.Path('r20_src.gz').read_bytes()))"
+          $r20=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($r20 -ne "43f275c5187a31ea1acaf14432aad51032c170893aa74a1a2f91e697f60fcb58") { throw "R20 source SHA mismatch: $r20" }
+          python tools\build_r21_from_r20.py
+          $r21=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
+          Write-Host ("R21_SOURCE_SHA256="+$r21)
+          if ($r21 -ne "10dc0e433f60fde27d360ba8966366c26e07566d3861244864c4a80e7768eb26") { throw "R21 source SHA mismatch: $r21" }
+
+      - name: Fetch exact frozen Astronomy Engine dependencies
+        shell: pwsh
+        run: |
+          function Fetch-GitBlob([string]$Sha,[string]$OutFile) {
+            $u="https://api.github.com/repos/cosinekitty/astronomy/git/blobs/"+$Sha
+            $j=Invoke-RestMethod -Uri $u -Headers @{ "User-Agent"="ALBAZ-R21-MAPS" }
+            $b64=([string]$j.content) -replace "\s",""
+            [IO.File]::WriteAllBytes($OutFile,[Convert]::FromBase64String($b64))
+          }
+          Fetch-GitBlob "60d36e3002be6e58ad75619649bff4aabcc43239" "engine\thirdparty\astronomy.c"
+          Fetch-GitBlob "9d2455980102eda0c0fda6e66ac9fefd0c999712" "engine\thirdparty\astronomy.h"
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h" -OutFile "engine\thirdparty\stb_image_write.h"
+          if ((Get-FileHash engine\thirdparty\astronomy.c -Algorithm SHA256).Hash.ToLowerInvariant() -ne "a7f6bde24e3a53f24aff727080916809b5664117ebf3fef6e916da56a51d4fbd") { throw "astronomy.c SHA mismatch" }
+          if ((Get-FileHash engine\thirdparty\astronomy.h -Algorithm SHA256).Hash.ToLowerInvariant() -ne "d9cc0379035b69f1b75034879398e254036c708448d5427396596cd2c7f0d843") { throw "astronomy.h SHA mismatch" }
+
+      - name: Build R21 PPD1 and PPD4
+        shell: pwsh
+        run: |
+          $vswhere="${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs=& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw "Visual Studio C++ toolchain not found" }
+          $vcvars=Join-Path $vs "VC\Auxiliary\Build\vcvars64.bat"
+          $cmd=@"
+          @echo off
+          call "$vcvars"
+          if errorlevel 1 exit /b 1
+          cl /nologo /O2 /EHsc /std:c++20 /openmp /DNDEBUG /DPIXEL_PER_DEGREE=1 engine\hilal_unified_map5_engine.cc engine\thirdparty\astronomy.c /Fe:bin\hilal_unified_map5_engine_fast.exe
+          if errorlevel 1 exit /b 1
+          cl /nologo /O2 /EHsc /std:c++20 /openmp /DNDEBUG /DPIXEL_PER_DEGREE=4 engine\hilal_unified_map5_engine.cc engine\thirdparty\astronomy.c /Fe:bin\hilal_unified_map5_engine.exe
+          if errorlevel 1 exit /b 1
+          "@
+          Set-Content build_r21.cmd $cmd -Encoding ASCII
+          cmd /c build_r21.cmd
+          if ($LASTEXITCODE -ne 0) { throw "MSVC build failed" }
+
+      - name: Verify signatures phase chronology and ALBAZ boundary
+        shell: pwsh
+        run: |
+          $v1=& .\bin\hilal_unified_map5_engine_fast.exe version | Out-String
+          $v4=& .\bin\hilal_unified_map5_engine.exe version | Out-String
+          Write-Host $v1
+          Write-Host $v4
+          foreach ($pair in @(@($v1,"ppd=1"),@($v4,"ppd=4"))) {
+            if ($pair[0] -notmatch "ALBAZ_MAP_ENGINE_R21_REBUILD" -or $pair[0] -notmatch "HILAL_MAP_ENGINE_R21_REBUILD" -or $pair[0] -notmatch "batch=map5" -or $pair[0] -notmatch [regex]::Escape($pair[1])) { throw "R21 signature mismatch" }
+          }
+          $phase=& .\bin\hilal_unified_map5_engine_fast.exe 2026-09-12 phase-debug | Out-String
+          Write-Host $phase
+          if ($phase -notmatch "PROBE_PREV=2026-09-11T03:27:") { throw "R21 next-day phase regression failed" }
+          if ($phase -notmatch "PROBE_NEXT=2026-10-10T15:50:") { throw "R21 next conjunction regression failed" }
+          $b=& .\bin\hilal_unified_map5_engine_fast.exe albaz-eval 1 6.009854500758429 | Out-String
+          Write-Host $b
+          if ($b -notmatch "V=([-+0-9.eE]+)") { throw "V missing" }
+          if ([Math]::Abs([double]$Matches[1]) -gt 1e-12) { throw "V boundary mismatch" }
+          if ($b -notmatch "P=([-+0-9.eE]+)") { throw "P missing" }
+          if ([Math]::Abs([double]$Matches[1]-0.376742538335999) -gt 1e-12) { throw "P boundary mismatch" }
+
+      - name: Render R21 regression days PPD1
+        shell: pwsh
+        run: |
+          $env:OMP_NUM_THREADS="4"
+          foreach ($d in @("2026-09-11","2026-09-12")) {
+            $dir="smoke_"+$d
+            New-Item -ItemType Directory -Force $dir | Out-Null
+            $sw=[Diagnostics.Stopwatch]::StartNew()
+            & .\bin\hilal_unified_map5_engine_fast.exe $d map5 evening "$dir\odeh.png" "$dir\yallop.png" "$dir\allawi.png" "$dir\saao.png" "$dir\albaz.png"
+            if ($LASTEXITCODE -ne 0) { throw "R21 PPD1 render failed: $d" }
+            $sw.Stop()
+            Write-Host ("R21_"+$d+"_PPD1_SECONDS="+[Math]::Round($sw.Elapsed.TotalSeconds,3))
+            foreach ($n in @("odeh","yallop","allawi","saao","albaz")) { if (!(Test-Path "$dir\$n.png")) { throw "missing $d $n" } }
+          }
+          $h11=(Get-FileHash smoke_2026-09-11\odeh.png -Algorithm SHA256).Hash
+          $h12=(Get-FileHash smoke_2026-09-12\odeh.png -Algorithm SHA256).Hash
+          if ($h11 -eq $h12) { throw "Odeh day-to-day regression: identical maps" }
+          foreach ($d in @("2026-09-11","2026-09-12")) {
+            $ho=(Get-FileHash "smoke_$d\odeh.png" -Algorithm SHA256).Hash
+            $hy=(Get-FileHash "smoke_$d\yallop.png" -Algorithm SHA256).Hash
+            $hs=(Get-FileHash "smoke_$d\saao.png" -Algorithm SHA256).Hash
+            if ($ho -eq $hy -or $ho -eq $hs -or $hy -eq $hs) { throw "Reference criteria collapsed to identical maps on $d" }
+          }
+
+      - name: Final PPD4 smoke
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force smoke_ppd4 | Out-Null
+          $env:OMP_NUM_THREADS="4"
+          $sw=[Diagnostics.Stopwatch]::StartNew()
+          & .\bin\hilal_unified_map5_engine.exe 2026-09-12 map5 evening smoke_ppd4\odeh.png smoke_ppd4\yallop.png smoke_ppd4\allawi.png smoke_ppd4\saao.png smoke_ppd4\albaz.png
+          if ($LASTEXITCODE -ne 0) { throw "R21 PPD4 smoke failed" }
+          $sw.Stop()
+          Write-Host ("R21_PPD4_SECONDS="+[Math]::Round($sw.Elapsed.TotalSeconds,3))
+          Add-Type -AssemblyName System.Drawing
+          $im=[System.Drawing.Image]::FromFile((Resolve-Path smoke_ppd4\odeh.png))
+          try { if ($im.Width -ne 1440 -or $im.Height -ne 720) { throw "PPD4 dimensions mismatch" } } finally { $im.Dispose() }
+
+      - name: Hash R21 engines
+        shell: pwsh
+        run: |
+          Get-FileHash bin\hilal_unified_map5_engine_fast.exe -Algorithm SHA256 | Format-List | Out-File bin\SHA256_R21_MAP5.txt
+          Get-FileHash bin\hilal_unified_map5_engine.exe -Algorithm SHA256 | Format-List | Out-File -Append bin\SHA256_R21_MAP5.txt
+          Get-Content bin\SHA256_R21_MAP5.txt
+
+      - name: Upload R21 Windows engines and witnesses
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALBAZ_R21_MAPS_REBUILD_WINDOWS_X64
+          path: |
+            bin/hilal_unified_map5_engine_fast.exe
+            bin/hilal_unified_map5_engine.exe
+            bin/SHA256_R21_MAP5.txt
+            smoke_2026-09-11/*.png
+            smoke_2026-09-12/*.png
+            smoke_ppd4/*.png
+          if-no-files-found: error
