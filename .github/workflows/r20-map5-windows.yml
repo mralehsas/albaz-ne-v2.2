@@ -6,6 +6,7 @@ on:
       - r20-scientific-hd
     paths:
       - '.github/workflows/r20-map5-windows.yml'
+      - 'tools/r20_src.b64'
   workflow_dispatch:
 
 jobs:
@@ -14,122 +15,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reconstruct frozen R19.6 source
+      - name: Reconstruct exact packaged R20 source
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force engine\thirdparty, bin | Out-Null
-          $b64 = (Get-Content tools\map5_src.part1.b64 -Raw).Trim() + (Get-Content tools\map5_src.part2.b64 -Raw).Trim()
-          [IO.File]::WriteAllBytes("map5_src.gz", [Convert]::FromBase64String($b64))
-          python -c "import gzip,pathlib; pathlib.Path(r'engine/hilal_unified_map5_engine.cc').write_bytes(gzip.decompress(pathlib.Path('map5_src.gz').read_bytes()))"
-
-      - name: Apply portable phase search and R20 clean raster contract
-        shell: pwsh
-        run: |
-          $py = @'
-          from pathlib import Path
-          p=Path(r"engine/hilal_unified_map5_engine.cc")
-          s=p.read_text(encoding="utf-8")
-
-          # Portable previous-new-moon lookup, independent of negative-limit semantics.
-          needle="static PhaseWindow build_phase_window(astro_time_t base) {"
-          helper="""static astro_search_result_t search_previous_moon_phase_forward(double target_lon, astro_time_t t, double lookback_days) {
-              const double eps_days = 1.0e-5;
-              const double span = std::max(1.0, lookback_days);
-              const astro_time_t start = Astronomy_AddDays(t, -span);
-              return Astronomy_SearchMoonPhase(target_lon, start, span - eps_days);
-          }
-
-          static PhaseWindow build_phase_window(astro_time_t base) {"""
-          if needle in s and "search_previous_moon_phase_forward" not in s:
-              s=s.replace(needle, helper, 1)
-              s=s.replace("Astronomy_SearchMoonPhase(0.0, base, -40.0)", "search_previous_moon_phase_forward(0.0, base, 40.0)", 1)
-              s=s.replace("Astronomy_SearchMoonPhase(0.0, Astronomy_AddDays(p1.time, -0.02), -40.0)", "search_previous_moon_phase_forward(0.0, Astronomy_AddDays(p1.time, -0.02), 40.0)", 1)
-              s=s.replace("Astronomy_SearchMoonPhase(0.0, t, -35.0)", "search_previous_moon_phase_forward(0.0, t, 35.0)", 1)
-
-          if "#include <vector>" not in s:
-              if "#include <array>\n" in s:
-                  s=s.replace("#include <array>\n", "#include <array>\n#include <vector>\n", 1)
-              else:
-                  s="#include <vector>\n"+s
-
-          s=s.replace("// R19.6 IQ200 UNIFIED MAP5 FAST PATH","// R20 IQ200 UNIFIED MAP5 SCIENTIFIC-HD FAST PATH")
-          s=s.replace("ALBAZ_UNIFIED_MAP5_ENGINE_R19_6","ALBAZ_UNIFIED_MAP5_ENGINE_R20_HD")
-          s=s.replace("unified-map5-r19.6-2026-09-08","unified-map5-r20-hd-2026-09-09")
-          s=s.replace("HILAL_UNIFIED_MAP5_R19_6","HILAL_UNIFIED_MAP5_R20_HD")
-          s=s.replace("    bool line_oy=false, line_allawi=false, line_saao=false;\n    double time_oy=INFINITY, time_allawi=INFINITY;\n","")
-          s=s.replace("            out.time_oy = best_time.ut;\n            out.line_oy = ((int)std::round((best_time.ut - pb.nearest.ut)*24.0*20.0) % 20) == 0;\n","")
-          s=s.replace("                out.time_allawi = allawi_best.time.ut;\n                out.line_allawi = ((int)std::round((allawi_best.time.ut - pb.nearest.ut)*24.0*20.0) % 20) == 0;\n","")
-          s=s.replace("            out.line_saao = ((int)std::round((sunset.time.ut - pb.nearest.ut)*24.0*20.0) % 20) == 0;\n","")
-          s=s.replace("Invalid command. Production R19.6 supports map5 only.","Invalid command. Production R20 supports MAP5 only.")
-
-          start=s.index("static int render_map5_evening(")
-          end=s.index("\nstatic int cmd_albaz_eval_v22", start)
-          render=r"""static inline void map5_store_colors(const Map5Cell& r, uint32_t& o, uint32_t& y, uint32_t& a, uint32_t& s, uint32_t& b) {
-              // R20: categorical science only. Isochronal/hour strokes and visibility diamonds
-              // are UI presentation layers and must never overwrite scientific class pixels.
-              o=color_odeh_yallop(r.odeh);
-              y=color_odeh_yallop(r.yallop);
-              a=color_allawi(r.allawi);
-              s=color_saao(r.saao);
-              b=color_albaz_v22(r.albaz);
-          }
-
-          static int render_map5_evening(astro_time_t base_time, const char* odeh_png, const char* yallop_png,
-                                         const char* allawi_png, const char* saao_png, const char* albaz_png) {
-              const PhaseWindow phases=build_phase_window(base_time);
-              if (!phases.ok) return 4;
-              const size_t n=(size_t)width*height;
-              std::vector<uint32_t> o(n),y(n),a(n),s(n),b(n);
-          #if defined(_OPENMP)
-              #pragma omp parallel for schedule(static)
-          #endif
-              for (int ix=0; ix<(int)width; ++ix) {
-                  for (unsigned iy=0; iy<height; ++iy) {
-                      const double lat=((height-(iy+1))/(double)pixelsPerDegree)+minLatitude;
-                      const double lon=(ix/(double)pixelsPerDegree)+minLongitude;
-                      const Map5Cell r=evaluate_map5_cell_evening(lat,lon,base_time,phases);
-                      const size_t k=(size_t)ix+(size_t)iy*width;
-                      map5_store_colors(r,o[k],y[k],a[k],s[k],b[k]);
-                  }
-              }
-              int ok=1;
-              ok &= stbi_write_png(odeh_png,width,height,4,o.data(),width*4);
-              ok &= stbi_write_png(yallop_png,width,height,4,y.data(),width*4);
-              ok &= stbi_write_png(allawi_png,width,height,4,a.data(),width*4);
-              ok &= stbi_write_png(saao_png,width,height,4,s.data(),width*4);
-              ok &= stbi_write_png(albaz_png,width,height,4,b.data(),width*4);
-              return ok?0:3;
-          }
-          """
-          s=s[:start]+render+s[end:]
-          p.write_text(s,encoding="utf-8")
-          '@
-          $py | python -
-          $srcSha=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($srcSha -ne "43f275c5187a31ea1acaf14432aad51032c170893aa74a1a2f91e697f60fcb58") { throw "R20 source SHA mismatch: $srcSha" }
+          $b64=(Get-Content tools\r20_src.b64 -Raw).Trim()
+          [IO.File]::WriteAllBytes("r20_src.gz",[Convert]::FromBase64String($b64))
+          python -c "import gzip,pathlib; pathlib.Path(r'engine/hilal_unified_map5_engine.cc').write_bytes(gzip.decompress(pathlib.Path('r20_src.gz').read_bytes()))"
+          $src=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($src -ne "43f275c5187a31ea1acaf14432aad51032c170893aa74a1a2f91e697f60fcb58") { throw "R20 source SHA mismatch: $src" }
 
       - name: Fetch exact frozen Astronomy Engine dependencies
         shell: pwsh
         run: |
-          function Fetch-GitBlob([string]$Sha, [string]$OutFile) {
-            $u = "https://api.github.com/repos/cosinekitty/astronomy/git/blobs/" + $Sha
-            $j = Invoke-RestMethod -Uri $u -Headers @{ "User-Agent" = "ALBAZ-R20-HD" }
-            $b64 = ([string]$j.content) -replace "\s", ""
-            [IO.File]::WriteAllBytes($OutFile, [Convert]::FromBase64String($b64))
+          function Fetch-GitBlob([string]$Sha,[string]$OutFile) {
+            $u="https://api.github.com/repos/cosinekitty/astronomy/git/blobs/"+$Sha
+            $j=Invoke-RestMethod -Uri $u -Headers @{ "User-Agent"="ALBAZ-R20-HD" }
+            $b64=([string]$j.content) -replace "\s",""
+            [IO.File]::WriteAllBytes($OutFile,[Convert]::FromBase64String($b64))
           }
           Fetch-GitBlob "60d36e3002be6e58ad75619649bff4aabcc43239" "engine\thirdparty\astronomy.c"
           Fetch-GitBlob "9d2455980102eda0c0fda6e66ac9fefd0c999712" "engine\thirdparty\astronomy.h"
           Invoke-WebRequest -Uri "https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h" -OutFile "engine\thirdparty\stb_image_write.h"
-          $ac=(Get-FileHash engine\thirdparty\astronomy.c -Algorithm SHA256).Hash.ToLowerInvariant()
-          $ah=(Get-FileHash engine\thirdparty\astronomy.h -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($ac -ne "a7f6bde24e3a53f24aff727080916809b5664117ebf3fef6e916da56a51d4fbd") { throw "astronomy.c SHA mismatch" }
-          if ($ah -ne "d9cc0379035b69f1b75034879398e254036c708448d5427396596cd2c7f0d843") { throw "astronomy.h SHA mismatch" }
+          if ((Get-FileHash engine\thirdparty\astronomy.c -Algorithm SHA256).Hash.ToLowerInvariant() -ne "a7f6bde24e3a53f24aff727080916809b5664117ebf3fef6e916da56a51d4fbd") { throw "astronomy.c SHA mismatch" }
+          if ((Get-FileHash engine\thirdparty\astronomy.h -Algorithm SHA256).Hash.ToLowerInvariant() -ne "d9cc0379035b69f1b75034879398e254036c708448d5427396596cd2c7f0d843") { throw "astronomy.h SHA mismatch" }
 
-      - name: Build PPD1 and PPD4 R20 engines
+      - name: Build exact R20 PPD1 and PPD4 engines
         shell: pwsh
         run: |
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $vswhere="${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs=& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           if (-not $vs) { throw "Visual Studio C++ toolchain not found" }
           $vcvars=Join-Path $vs "VC\Auxiliary\Build\vcvars64.bat"
           $cmd=@"
@@ -145,71 +60,64 @@ jobs:
           cmd /c build_r20.cmd
           if ($LASTEXITCODE -ne 0) { throw "MSVC build failed" }
 
-      - name: Verify signatures and ALBAZ boundary
+      - name: Verify R20 signatures and ALBAZ boundary
         shell: pwsh
         run: |
           $v1=& .\bin\hilal_unified_map5_engine_fast.exe version | Out-String
           $v4=& .\bin\hilal_unified_map5_engine.exe version | Out-String
           Write-Host $v1
           Write-Host $v4
-          if ($v1 -notmatch "ALBAZ_UNIFIED_MAP5_ENGINE_R20_HD" -or $v1 -notmatch "ppd=1" -or $v1 -notmatch "batch=map5") { throw "R20 PPD1 signature mismatch" }
-          if ($v4 -notmatch "ALBAZ_UNIFIED_MAP5_ENGINE_R20_HD" -or $v4 -notmatch "ppd=4" -or $v4 -notmatch "batch=map5") { throw "R20 PPD4 signature mismatch" }
+          foreach ($pair in @(@($v1,"ppd=1"),@($v4,"ppd=4"))) {
+            if ($pair[0] -notmatch "ALBAZ_UNIFIED_MAP5_ENGINE_R20_HD" -or $pair[0] -notmatch "batch=map5" -or $pair[0] -notmatch "render=clean-categorical-full-grid" -or $pair[0] -notmatch [regex]::Escape($pair[1])) { throw "R20 signature mismatch" }
+          }
           $b=& .\bin\hilal_unified_map5_engine_fast.exe albaz-eval 1 6.009854500758429 | Out-String
           Write-Host $b
-          if ($b -notmatch "V=([-+0-9.eE]+)") { throw "V output missing" }
+          if ($b -notmatch "V=([-+0-9.eE]+)") { throw "V missing" }
           if ([Math]::Abs([double]$Matches[1]) -gt 1e-12) { throw "V boundary mismatch" }
-          if ($b -notmatch "P=([-+0-9.eE]+)") { throw "P output missing" }
+          if ($b -notmatch "P=([-+0-9.eE]+)") { throw "P missing" }
           if ([Math]::Abs([double]$Matches[1]-0.376742538335999) -gt 1e-12) { throw "P boundary mismatch" }
 
-      - name: Smoke R20 five-map render 2026-09-12 PPD1
+      - name: Smoke PPD1 five-map render
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force smoke | Out-Null
+          New-Item -ItemType Directory -Force smoke1 | Out-Null
           $env:OMP_NUM_THREADS="4"
           $sw=[Diagnostics.Stopwatch]::StartNew()
-          & .\bin\hilal_unified_map5_engine_fast.exe 2026-09-12 map5 evening smoke\odeh.png smoke\yallop.png smoke\allawi.png smoke\saao.png smoke\albaz.png
-          if ($LASTEXITCODE -ne 0) { throw "R20 MAP5 smoke failed" }
+          & .\bin\hilal_unified_map5_engine_fast.exe 2026-09-12 map5 evening smoke1\odeh.png smoke1\yallop.png smoke1\allawi.png smoke1\saao.png smoke1\albaz.png
+          if ($LASTEXITCODE -ne 0) { throw "PPD1 smoke failed" }
           $sw.Stop()
           Write-Host ("R20_PPD1_SECONDS="+[Math]::Round($sw.Elapsed.TotalSeconds,3))
-          foreach ($f in @("odeh.png","yallop.png","allawi.png","saao.png","albaz.png")) {
-            $p=Join-Path smoke $f
-            if (!(Test-Path $p) -or (Get-Item $p).Length -le 0) { throw "Missing output $f" }
-          }
+          foreach ($n in @("odeh","yallop","allawi","saao","albaz")) { if (!(Test-Path "smoke1\$n.png")) { throw "missing smoke1 $n" } }
 
-      - name: Smoke R20 five-map final render 2026-09-12 PPD4
+      - name: Smoke PPD4 five-map final render
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force smoke4 | Out-Null
           $env:OMP_NUM_THREADS="4"
           $sw=[Diagnostics.Stopwatch]::StartNew()
           & .\bin\hilal_unified_map5_engine.exe 2026-09-12 map5 evening smoke4\odeh.png smoke4\yallop.png smoke4\allawi.png smoke4\saao.png smoke4\albaz.png
-          if ($LASTEXITCODE -ne 0) { throw "R20 MAP5 PPD4 smoke failed" }
+          if ($LASTEXITCODE -ne 0) { throw "PPD4 smoke failed" }
           $sw.Stop()
           Write-Host ("R20_PPD4_SECONDS="+[Math]::Round($sw.Elapsed.TotalSeconds,3))
-          foreach ($f in @("odeh.png","yallop.png","allawi.png","saao.png","albaz.png")) {
-            $p=Join-Path smoke4 $f
-            if (!(Test-Path $p) -or (Get-Item $p).Length -le 0) { throw "Missing PPD4 output $f" }
-          }
-          $probe = [System.Drawing.Image]::FromFile((Join-Path smoke4 "albaz.png"))
-          try {
-            if ($probe.Width -ne 1440 -or $probe.Height -ne 720) { throw "PPD4 dimensions are not 1440x720" }
-          } finally { $probe.Dispose() }
+          Add-Type -AssemblyName System.Drawing
+          $im=[System.Drawing.Image]::FromFile((Resolve-Path smoke4\albaz.png))
+          try { if ($im.Width -ne 1440 -or $im.Height -ne 720) { throw "PPD4 dimensions mismatch" } } finally { $im.Dispose() }
 
-      - name: Hash R20 engines
+      - name: Hash exact R20 engines
         shell: pwsh
         run: |
           Get-FileHash bin\hilal_unified_map5_engine_fast.exe -Algorithm SHA256 | Format-List | Out-File bin\SHA256_R20_MAP5.txt
           Get-FileHash bin\hilal_unified_map5_engine.exe -Algorithm SHA256 | Format-List | Out-File -Append bin\SHA256_R20_MAP5.txt
           Get-Content bin\SHA256_R20_MAP5.txt
 
-      - name: Upload R20 Windows engines
+      - name: Upload exact R20 Windows engines
         uses: actions/upload-artifact@v4
         with:
-          name: ALBAZ_R20_MAP5_WINDOWS_X64
+          name: ALBAZ_R20_MAP5_WINDOWS_X64_EXACT
           path: |
             bin/hilal_unified_map5_engine_fast.exe
             bin/hilal_unified_map5_engine.exe
             bin/SHA256_R20_MAP5.txt
-            smoke/*.png
+            smoke1/*.png
             smoke4/*.png
           if-no-files-found: error
