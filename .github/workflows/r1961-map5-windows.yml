@@ -24,6 +24,32 @@ jobs:
           [IO.File]::WriteAllBytes("map5_src.gz", [Convert]::FromBase64String($b64))
           python -c "import gzip,pathlib; pathlib.Path(r'engine/hilal_unified_map5_engine.cpp').write_bytes(gzip.decompress(pathlib.Path('map5_src.gz').read_bytes()))"
 
+      - name: Apply portable lunar-phase search
+        shell: pwsh
+        run: |
+          $py = @'
+          from pathlib import Path
+          p=Path(r"engine/hilal_unified_map5_engine.cpp")
+          s=p.read_text(encoding="utf-8")
+          needle="static PhaseWindow build_phase_window(astro_time_t base) {"
+          helper="""static astro_search_result_t search_previous_moon_phase_forward(double target_lon, astro_time_t t, double lookback_days) {
+              const double eps_days = 1.0e-5;
+              const double span = std::max(1.0, lookback_days);
+              const astro_time_t start = Astronomy_AddDays(t, -span);
+              return Astronomy_SearchMoonPhase(target_lon, start, span - eps_days);
+          }
+
+          static PhaseWindow build_phase_window(astro_time_t base) {"""
+          if needle not in s:
+              raise SystemExit("phase-window anchor missing")
+          s=s.replace(needle, helper, 1)
+          s=s.replace("Astronomy_SearchMoonPhase(0.0, base, -40.0)", "search_previous_moon_phase_forward(0.0, base, 40.0)", 1)
+          s=s.replace("Astronomy_SearchMoonPhase(0.0, Astronomy_AddDays(p1.time, -0.02), -40.0)", "search_previous_moon_phase_forward(0.0, Astronomy_AddDays(p1.time, -0.02), 40.0)", 1)
+          s=s.replace("Astronomy_SearchMoonPhase(0.0, t, -35.0)", "search_previous_moon_phase_forward(0.0, t, 35.0)", 1)
+          p.write_text(s,encoding="utf-8")
+          '@
+          $py | python -
+
       - name: Fetch pinned dependencies
         shell: pwsh
         run: |
