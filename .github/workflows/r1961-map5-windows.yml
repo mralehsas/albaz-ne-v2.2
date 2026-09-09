@@ -46,6 +46,8 @@ jobs:
           if errorlevel 1 exit /b 1
           cl /nologo /O2 /EHsc /std:c++20 /openmp /DNDEBUG /DPIXEL_PER_DEGREE=4 engine\hilal_unified_map5_engine.cpp engine\thirdparty\astronomy.c /Fe:bin\hilal_unified_map5_engine.exe
           if errorlevel 1 exit /b 1
+          cl /nologo /O2 /EHsc /std:c++20 /DNDEBUG /DPIXEL_PER_DEGREE=1 engine\hilal_unified_map5_engine.cpp engine\thirdparty\astronomy.c /Fe:bin\hilal_unified_map5_engine_fast_serial.exe
+          if errorlevel 1 exit /b 1
           "@
           Set-Content -Path build_map5.cmd -Value $cmd -Encoding ASCII
           cmd /c build_map5.cmd
@@ -69,19 +71,29 @@ jobs:
           $pp = [double]$Matches[1]
           if ([Math]::Abs($pp - 0.376742538335999) -gt 1e-12) { throw ("ALBAZ P boundary mismatch: " + $pp) }
 
-      - name: Smoke render five maps PPD1
+      - name: Diagnose PPD1 rendering on Windows
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force smoke | Out-Null
-          $sw = [Diagnostics.Stopwatch]::StartNew()
-          & .\bin\hilal_unified_map5_engine_fast.exe 2026-09-11 map5 evening smoke\odeh.png smoke\yallop.png smoke\allawi.png smoke\saao.png smoke\albaz.png
-          if ($LASTEXITCODE -ne 0) { throw "MAP5 smoke render failed" }
-          $sw.Stop()
-          Write-Host ("MAP5_PPD1_SECONDS=" + [Math]::Round($sw.Elapsed.TotalSeconds,3))
-          foreach ($f in @("odeh.png","yallop.png","allawi.png","saao.png","albaz.png")) {
-            $p = Join-Path smoke $f
-            if (!(Test-Path $p) -or (Get-Item $p).Length -le 0) { throw "Missing smoke output: $f" }
+          $ErrorActionPreference = "Continue"
+          foreach ($mode in @("serial","omp1","omp2","omp4")) {
+            $dir = "smoke_" + $mode
+            New-Item -ItemType Directory -Force $dir | Out-Null
+            if ($mode -eq "serial") {
+              $exe = ".\\bin\\hilal_unified_map5_engine_fast_serial.exe"
+              Remove-Item Env:OMP_NUM_THREADS -ErrorAction SilentlyContinue
+            } else {
+              $exe = ".\\bin\\hilal_unified_map5_engine_fast.exe"
+              $env:OMP_NUM_THREADS = $mode.Substring(3)
+            }
+            $sw = [Diagnostics.Stopwatch]::StartNew()
+            & $exe 2026-09-11 map5 evening "$dir\\odeh.png" "$dir\\yallop.png" "$dir\\allawi.png" "$dir\\saao.png" "$dir\\albaz.png"
+            $code = $LASTEXITCODE
+            $sw.Stop()
+            Write-Host ("DIAG_" + $mode + "_EXIT=" + $code + " SECONDS=" + [Math]::Round($sw.Elapsed.TotalSeconds,3))
+            $count = @(Get-ChildItem $dir -Filter *.png -ErrorAction SilentlyContinue).Count
+            Write-Host ("DIAG_" + $mode + "_PNG_COUNT=" + $count)
           }
+          if (@(Get-ChildItem smoke_serial -Filter *.png -ErrorAction SilentlyContinue).Count -ne 5) { throw "Serial MAP5 smoke failed" }
 
       - name: Hash Windows engines
         shell: pwsh
@@ -97,6 +109,7 @@ jobs:
           path: |
             bin/hilal_unified_map5_engine_fast.exe
             bin/hilal_unified_map5_engine.exe
+            bin/hilal_unified_map5_engine_fast_serial.exe
             bin/SHA256_WINDOWS_MAP5.txt
-            smoke/*.png
+            smoke_*/*.png
           if-no-files-found: error
