@@ -1,0 +1,98 @@
+name: R19.6.1 MAP5 Windows x64 Build
+
+on:
+  push:
+    branches:
+      - r1961-map5-windows-build
+    paths:
+      - '.github/workflows/r1961-map5-windows.yml'
+      - 'tools/map5_src.part1.b64'
+      - 'tools/map5_src.part2.b64'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reconstruct MAP5 source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force engine\thirdparty, bin | Out-Null
+          $b64 = (Get-Content tools\map5_src.part1.b64 -Raw).Trim() + (Get-Content tools\map5_src.part2.b64 -Raw).Trim()
+          [IO.File]::WriteAllBytes("map5_src.gz", [Convert]::FromBase64String($b64))
+          python -c "import gzip,pathlib; pathlib.Path(r'engine/hilal_unified_map5_engine.cpp').write_bytes(gzip.decompress(pathlib.Path('map5_src.gz').read_bytes()))"
+
+      - name: Fetch pinned dependencies
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cosinekitty/astronomy/v2.1.0/source/c/astronomy.c" -OutFile "engine\thirdparty\astronomy.c"
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cosinekitty/astronomy/v2.1.0/source/c/astronomy.h" -OutFile "engine\thirdparty\astronomy.h"
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h" -OutFile "engine\thirdparty\stb_image_write.h"
+
+      - name: Build PPD1 and PPD4 with MSVC OpenMP
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw "Visual Studio C++ toolchain not found" }
+          $vcvars = Join-Path $vs "VC\Auxiliary\Build\vcvars64.bat"
+          $cmd = @"
+          @echo off
+          call "$vcvars"
+          if errorlevel 1 exit /b 1
+          cl /nologo /O2 /EHsc /std:c++20 /openmp /DNDEBUG /DPIXEL_PER_DEGREE=1 engine\hilal_unified_map5_engine.cpp engine\thirdparty\astronomy.c /Fe:bin\hilal_unified_map5_engine_fast.exe
+          if errorlevel 1 exit /b 1
+          cl /nologo /O2 /EHsc /std:c++20 /openmp /DNDEBUG /DPIXEL_PER_DEGREE=4 engine\hilal_unified_map5_engine.cpp engine\thirdparty\astronomy.c /Fe:bin\hilal_unified_map5_engine.exe
+          if errorlevel 1 exit /b 1
+          "@
+          Set-Content -Path build_map5.cmd -Value $cmd -Encoding ASCII
+          cmd /c build_map5.cmd
+          if ($LASTEXITCODE -ne 0) { throw "MSVC build failed" }
+
+      - name: Verify engine signatures and ALBAZ boundary
+        shell: pwsh
+        run: |
+          $v1 = & .\bin\hilal_unified_map5_engine_fast.exe version | Out-String
+          $v4 = & .\bin\hilal_unified_map5_engine.exe version | Out-String
+          Write-Host $v1
+          Write-Host $v4
+          if ($v1 -notmatch "ALBAZ_UNIFIED_MAP5_ENGINE_R19_6" -or $v1 -notmatch "ppd=1" -or $v1 -notmatch "batch=map5") { throw "PPD1 signature mismatch" }
+          if ($v4 -notmatch "ALBAZ_UNIFIED_MAP5_ENGINE_R19_6" -or $v4 -notmatch "ppd=4" -or $v4 -notmatch "batch=map5") { throw "PPD4 signature mismatch" }
+          $b = & .\bin\hilal_unified_map5_engine_fast.exe albaz-eval 1 6.009854500758429 | Out-String
+          Write-Host $b
+          if ($b -notmatch "V=0.000000000000000") { throw "ALBAZ V boundary mismatch" }
+          if ($b -notmatch "P=0.376742538335999") { throw "ALBAZ P boundary mismatch" }
+
+      - name: Smoke render five maps PPD1
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force smoke | Out-Null
+          $sw = [Diagnostics.Stopwatch]::StartNew()
+          & .\bin\hilal_unified_map5_engine_fast.exe 2026-09-11 map5 evening smoke\odeh.png smoke\yallop.png smoke\allawi.png smoke\saao.png smoke\albaz.png
+          if ($LASTEXITCODE -ne 0) { throw "MAP5 smoke render failed" }
+          $sw.Stop()
+          Write-Host ("MAP5_PPD1_SECONDS=" + [Math]::Round($sw.Elapsed.TotalSeconds,3))
+          foreach ($f in @("odeh.png","yallop.png","allawi.png","saao.png","albaz.png")) {
+            $p = Join-Path smoke $f
+            if (!(Test-Path $p) -or (Get-Item $p).Length -le 0) { throw "Missing smoke output: $f" }
+          }
+
+      - name: Hash Windows engines
+        shell: pwsh
+        run: |
+          Get-FileHash bin\hilal_unified_map5_engine_fast.exe -Algorithm SHA256 | Format-List | Out-File bin\SHA256_WINDOWS_MAP5.txt
+          Get-FileHash bin\hilal_unified_map5_engine.exe -Algorithm SHA256 | Format-List | Out-File -Append bin\SHA256_WINDOWS_MAP5.txt
+          Get-Content bin\SHA256_WINDOWS_MAP5.txt
+
+      - name: Upload verified MAP5 Windows engines
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALBAZ_R1961_MAP5_WINDOWS_X64
+          path: |
+            bin/hilal_unified_map5_engine_fast.exe
+            bin/hilal_unified_map5_engine.exe
+            bin/SHA256_WINDOWS_MAP5.txt
+            smoke/*.png
+          if-no-files-found: error
