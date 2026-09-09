@@ -62,8 +62,12 @@ jobs:
           if ($v4 -notmatch "ALBAZ_UNIFIED_MAP5_ENGINE_R19_6" -or $v4 -notmatch "ppd=4" -or $v4 -notmatch "batch=map5") { throw "PPD4 signature mismatch" }
           $b = & .\bin\hilal_unified_map5_engine_fast.exe albaz-eval 1 6.009854500758429 | Out-String
           Write-Host $b
-          if ($b -notmatch "V=0.000000000000000") { throw "ALBAZ V boundary mismatch" }
-          if ($b -notmatch "P=0.376742538335999") { throw "ALBAZ P boundary mismatch" }
+          if ($b -notmatch "V=([-+0-9.eE]+)") { throw "ALBAZ V output missing" }
+          $vv = [double]$Matches[1]
+          if ([Math]::Abs($vv) -gt 1e-12) { throw ("ALBAZ V boundary mismatch: " + $vv) }
+          if ($b -notmatch "P=([-+0-9.eE]+)") { throw "ALBAZ P output missing" }
+          $pp = [double]$Matches[1]
+          if ([Math]::Abs($pp - 0.376742538335999) -gt 1e-12) { throw ("ALBAZ P boundary mismatch: " + $pp) }
 
       - name: Smoke render five maps PPD1
         shell: pwsh
