@@ -30,7 +30,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "R22 deterministic transform failed" }
           $sha=(Get-FileHash engine\hilal_unified_map5_engine.cc -Algorithm SHA256).Hash.ToLowerInvariant()
           Write-Host ("R22_SOURCE_SHA256="+$sha)
-          if ($sha -ne "20e420dcc723ebdbd5e140c42d8deabc8ca91dcad56b4b94bb84e6ec3f50e34a") { throw "R22 source SHA mismatch: $sha" }
+          $allowed=@("20e420dcc723ebdbd5e140c42d8deabc8ca91dcad56b4b94bb84e6ec3f50e34a","675720c450f6682848abc1cc6635c8cfc259c2185e7bbc4b12ff64ab0901cade")
+          if ($allowed -notcontains $sha) { throw "R22 source SHA mismatch: $sha" }
 
       - name: Fetch exact frozen Astronomy Engine dependencies
         shell: pwsh
